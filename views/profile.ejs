@@ -1,0 +1,153 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<link rel="stylesheet" href="/css/profile.css">
+<link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet">
+
+<main class="profile-container container mt-4 mb-4 flex-grow-1">
+    <div class="position-relative modal-aligned2">
+        <h1 class="profile-title text-center mb-3" style="font-size: 1.8rem;">Il mio profilo</h1>
+
+        <div class="card profile-card mx-auto shadow rounded-3" style="max-width: 600px;">
+            <button class="btn btn-icon position-absolute top-0 end-0 m-2" style="z-index: 1;"
+                data-bs-toggle="modal" data-bs-target="#modificaProfiloModal">
+                <i class="material-icons" style="font-size: 1.2rem;">edit</i>
+            </button>
+
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-4 label">Nome Utente:</div>
+                    <div class="col-sm-8 value"><%= user.nome %></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 label">Email:</div>
+                    <div class="col-sm-8 value"><%= user.email %></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 label">Password:</div>
+                    <div class="col-sm-8 value">********</div>
+                </div>
+                <hr>
+                <div class="row mb-3">
+                    <div class="col-sm-4 label">Credito disponibile:</div>
+                    <div class="col-sm-8 value">€ <%= user.saldo || '-' %></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 label">Punti fedeltà:</div>
+                    <div class="col-sm-8 value"><%= user.puntiFedelta || '-' %></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 label">Status:</div>
+                    <div class="col-sm-8 value"><%= user.stato_profilo || '-' %></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 label">Verifica facciale:</div>
+                    <div class="col-sm-8 value">
+                        <% if (user.faceRegistered) { %>
+                            <span class="text-success">Registrato</span>
+                            <button class="btn btn-sm btn-outline-danger ms-2 delete-face-btn">
+                                Elimina
+                            </button>
+                        <% } else { %>
+                            <span class="text-muted">Non registrato</span>
+                            <button class="btn btn-sm btn-success ms-2" data-bs-toggle="modal" data-bs-target="#faceRegistrationModal">
+                                Registra
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="faceRegistrationModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header btn btn-sm py-2 color-nav">
+                                <h5 class="modal-title fs-6">Registrazione Volto</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="text-center mb-3">
+                                    <video id="video" width="400" height="300" autoplay class="d-none"></video>
+                                    <canvas id="canvas" width="400" height="300" class="d-none"></canvas>
+                                    <div id="instructions">
+                                        <p>Clicca "Inizia Registrazione" per scattare una foto del tuo volto.</p>
+                                        <p class="small text-muted">Assicurati di essere in una zona ben illuminata.</p>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <button id="startCamera" class="btn btn-success">Inizia Registrazione</button>
+                                    <button id="capture" class="btn btn-success d-none">Scatta Foto</button>
+                                    <button id="retry" class="btn btn-warning d-none">Riprova</button>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Chiudi</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modificaProfiloModal" tabindex="-1" aria-labelledby="modificaProfiloModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-aligned">
+                <div class="modal-header btn btn-sm py-2 color-nav">
+                    <h5 class="modal-title fs-6" id="modificaProfiloModalLabel">Modifica Profilo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <form id="formModificaProfilo" action="/profile/update" method="POST">
+                    <div class="modal-body py-3">
+                        <div class="mb-2">
+                            <label for="nome" class="form-label small">Nome Utente</label>
+                            <input type="text" class="form-control form-control-sm" id="nome" name="nome"
+                                value="<%= user.nome %>" required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="email" class="form-label small">Email</label>
+                            <input type="email" class="form-control form-control-sm" id="email" name="email"
+                                value="<%= user.email %>" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2">
+                        <button type="submit" class="btn btn-sm color-nav">Salva Modifiche</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/profilo.js"></script>
+
+    <div class="modal fade" id="passwordVerificationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header btn btn-sm py-2 color-nav">
+                    <h5 class="modal-title fs-6">Verifica Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Per eliminare la registrazione facciale, inserisci la tua password:</p>
+                    <form id="passwordVerificationForm">
+                        <div class="mb-3">
+                            <label for="password" class="form-label small">Password</label>
+                            <input type="password" class="form-control form-control-sm" id="password" name="password" required>
+                            <div id="passwordError" class="text-danger small mt-1 d-none"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-danger" onclick="verifyAndDeleteFace()">Elimina Registrazione</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="/js/face-recognition.js"></script>
+<script src="/js/face-registration.js"></script>
+<%- include('partials/footer') %>

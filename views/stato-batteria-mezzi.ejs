@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stato Batteria Mezzi</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- Page CSS -->
+  <link rel="stylesheet" href="/css/stato-batteria-mezzi.css">
+</head>
+<body>
+
+<main class="container mt-5 mb-5 flex-grow-1">
+
+  <h1 class="page-title text-center mb-4">Stato Batteria Mezzi</h1>
+
+  <!-- Messaggi -->
+  <% if (error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <%= error %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Chiudi"></button>
+    </div>
+  <% } %>
+  <% if (success) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <%= success %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Chiudi"></button>
+    </div>
+  <% } %>
+
+  <!-- Filtro -->
+  <div class="card shadow rounded-4 p-4 mb-3">
+    <div class="row g-3 align-items-center">
+      <div class="col-md-6">
+        <label for="search" class="form-label mb-1">Cerca</label>
+        <input id="search" type="text" class="form-control" placeholder="Cerca per ID, tipo, parcheggio o stato...">
+      </div>
+      <div class="col-md-3">
+        <label for="statoFilter" class="form-label mb-1">Stato</label>
+        <select id="statoFilter" class="form-select">
+          <option value="">Tutti</option>
+          <option value="Disponibile">Disponibile</option>
+          <option value="Non disponibile">Non disponibile</option>
+          <option value="In manutenzione">In manutenzione</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="battFilter" class="form-label mb-1">Batteria</label>
+        <select id="battFilter" class="form-select">
+          <option value="">Tutte</option>
+          <option value=">70">Alta (&gt; 70%)</option>
+          <option value="31-70">Media (31–70%)</option>
+          <option value="<=30">Bassa (&le; 30%)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabella -->
+  <div class="card shadow rounded-4 p-4">
+    <div class="table-responsive">
+      <table id="mezziTable" class="table table-hover table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th style="white-space:nowrap;">ID</th>
+            <th>Tipo</th>
+            <th>Parcheggio</th>
+            <th>Stato</th>
+            <th style="min-width:220px;">Batteria</th>
+            <th style="min-width:120px;">Azione</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% 
+            var mapParcheggi = {};
+            if (Array.isArray(parcheggi)) {
+              parcheggi.forEach(function(p){ mapParcheggi[String(p.id)] = p.nome; });
+            }
+            
+            // Ottieni l'ID del mezzo in modifica dai query parameters
+            var editingMezzoId = typeof editingMezzoId !== 'undefined' ? editingMezzoId : null;
+          %>
+          <% mezzi.forEach(function(m){ 
+              var batt = (typeof m.batteria === 'number') ? Math.max(0, Math.min(100, m.batteria)) : null;
+              var pName = mapParcheggi[String(m.id_parcheggio)] || m.id_parcheggio || '—';
+              var stato = m.stato || '—';
+              var tipo = m.tipo || '—';
+              
+              // Controlla se siamo in modalità modifica per questo mezzo
+              var isEditing = editingMezzoId && editingMezzoId == m.id;
+          %>
+            <tr data-stato="<%= stato %>" data-batt="<%= batt !== null ? batt : '' %>">
+              <td class="fw-semibold"><%= m.displayName %></td>
+              <td><%= tipo %></td>
+              <td><%= pName %></td>
+              <td>
+                <% 
+                  var badgeClass = 'bg-secondary';
+                  if (stato === 'Disponibile') badgeClass = 'bg-success';
+                  else if (stato === 'Non disponibile') badgeClass = 'bg-danger';
+                  else if (stato.toLowerCase().indexOf('manut') !== -1) badgeClass = 'bg-warning text-dark';
+                %>
+                <span class="badge <%= badgeClass %> stato-badge"><%= stato %></span>
+              </td>
+              <td>
+                <% if (batt === null) { %>
+                  <span class="text-muted">N/D</span>
+                <% } else { %>
+                  <% if (isEditing) { %>
+                    <!-- Form modifica batteria -->
+                    <form action="/aggiorna-batteria-mezzo" method="POST" class="battery-edit-form">
+                      <input type="hidden" name="mezzoId" value="<%= m.id %>">
+                      <div class="input-group input-group-sm">
+                        <input type="number" name="batteria" class="form-control" 
+                              min="0" max="100" value="<%= batt %>" 
+                              style="width: 80px;">
+                        <button type="submit" class="btn btn-success btn-sm">OK</button>
+                        <a href="/stato-batteria-mezzi" class="btn btn-secondary btn-sm">Annulla</a>
+                      </div>
+                    </form>
+                  <% } else { %>
+                    <!-- Visualizzazione normale -->
+                    <div class="battery-wrap">
+                      <div class="progress battery-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<%= batt %>">
+                        <% 
+                          var barClass = 'bg-success';
+                          if (batt <= 30) barClass = 'bg-danger';
+                          else if (batt <= 70) barClass = 'bg-warning';
+                        %>
+                        <div class="progress-bar <%= barClass %>" style="width: <%= batt %>%"></div>
+                      </div>
+                      <span class="battery-label"><%= batt %>%</span>
+                      <!-- Pulsante per attivare modifica -->
+                      <form action="/stato-batteria-mezzi" method="GET" style="display:inline;">
+                        <input type="hidden" name="edit" value="<%= m.id %>">
+                        <button type="submit" class="btn btn-outline-primary btn-sm ms-2" title="Modifica batteria">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                          </svg>
+                        </button>
+                      </form>
+                    </div>
+                  <% } %>
+                <% } %>
+              </td>
+              <td>
+                <% if (stato === 'Disponibile') { %>
+                  <form action="/iot/blocca-mezzo" method="POST" style="display:inline;">
+                    <input type="hidden" name="redirectTo" value="stato-batteria-mezzi">
+                    <input type="hidden" name="mezzoId" value="<%= m.id %>">
+                    <button type="submit" class="btn btn-danger btn-sm">Blocca</button>
+                  </form>
+                <% } else if (stato === 'Non disponibile') { %>
+                  <form action="/iot/sblocca-mezzo" method="POST" style="display:inline;">
+                    <input type="hidden" name="mezzoId" value="<%= m.id %>">
+                    <input type="hidden" name="redirectTo" value="stato-batteria-mezzi">
+                    <button type="submit" class="btn btn-success btn-sm">Sblocca</button>
+                  </form>
+                <% } else { %>
+                  <span class="text-muted">—</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  (function(){
+    const search = document.getElementById('search');
+    const statoFilter = document.getElementById('statoFilter');
+    const battFilter = document.getElementById('battFilter');
+    const rows = Array.from(document.querySelectorAll('#mezziTable tbody tr'));
+
+    function matchBatt(batt, rule) {
+      if (rule === '') return true;
+      if (batt === '' || batt === null) return false;
+      const v = Number(batt);
+      if (rule === '>70') return v > 70;
+      if (rule === '31-70') return v >= 31 && v <= 70;
+      if (rule === '<=30') return v <= 30;
+      return true;
+    }
+
+    function applyFilters(){
+      const q = (search.value || '').toLowerCase().trim();
+      const statoVal = statoFilter.value;
+      const battVal = battFilter.value;
+
+      rows.forEach(tr => {
+        const texts = Array.from(tr.children).map(td => (td.textContent || '').toLowerCase());
+        const inText = q === '' ? true : texts.some(t => t.indexOf(q) !== -1);
+
+        const statoOk = !statoVal || (tr.getAttribute('data-stato') === statoVal);
+        const battOk = matchBatt(tr.getAttribute('data-batt'), battVal);
+
+        tr.style.display = (inText && statoOk && battOk) ? '' : 'none';
+      });
+    }
+
+    search.addEventListener('input', applyFilters);
+    statoFilter.addEventListener('change', applyFilters);
+    battFilter.addEventListener('change', applyFilters);
+  })();
+</script>
+
+</body>
+</html>

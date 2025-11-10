@@ -1,0 +1,36 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<link rel="stylesheet" href="/css/feedback.css">
+<link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet">
+
+<div class="container mt-5 mb-5">
+    <h1 class="text-center mb-4 testo">Feedback</h1>
+    <% if (feedbacks.length === 0) { %>
+        <p class="text-center testo">Nessun feedback disponibile.</p>
+    <% } else { %>
+        <div class="list-group">
+            <% feedbacks.forEach(feedback => { %>
+                <div class="list-group-item mb-3 rounded-4 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center ">
+                        <h5 class="mb-1"><%= feedback.nome %></h5>
+                        <small><%= feedback.endTime %></small>
+                    </div>
+                    <p class="mb-2"><strong>Feedback:</strong> <%= feedback.testo %></p>
+                    <% if (feedback.danni && feedback.danni.length > 0) { %>
+                        <div class="alert alert-warning mt-2 mb-0 p-2">
+                            <strong>Danni segnalati:</strong>
+                            <ul class="mb-0">
+                                <% feedback.danni.forEach(danno => { %>
+                                    <li><%= danno %></li>
+                                <% }) %>
+                            </ul>
+                        </div>
+                    <% } %>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+</div>
+<%- include('partials/footer') %>

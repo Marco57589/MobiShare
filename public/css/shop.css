@@ -1,0 +1,44 @@
+.container {
+    flex: 1;
+}
+
+.credito-attuale {
+    font-family: 'Itim', cursive;
+    font-size: 2.5rem;
+    color: #2f4538;
+    margin-top: 1rem;
+}
+
+.valori {
+    color: #2f4538;
+}
+
+.pacchetti {
+    color: #6da97b;
+}
+
+.card {
+    border: none;
+    border-radius: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: scale(1.03);
+}
+
+.card-body {
+    background-color: #ffffffc9;
+    border-radius: 1rem;
+    padding: 1.5rem;
+}
+
+.btn-success {
+    background-color: #6da97b;
+    border-color: #6da97b;
+}
+
+.btn-success:hover {
+    background-color: #5c8f69;
+    border-color: #5c8f69;
+}

@@ -1,0 +1,209 @@
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.page-title, .testo {
+    font-family: 'Itim', cursive;
+    color: #2f4538;
+}
+
+.page-title {
+    font-size: 2.5rem;
+}
+
+.testo {
+    margin-left: 400px !important;
+}
+
+.btn-verde, .button-gestore, .button-utente {
+    background-color: #aac994;
+    border: none;
+    color: black;
+    font-family: 'Inter', sans-serif;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-verde:hover,
+.button-gestore:hover,
+.button-utente:hover {
+    background-color: #9bb987;
+}
+
+.card, .custom-card, .custom-card-utente, .card-box {
+    background-color: rgba(255, 255, 255);
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* === SEZIONE UTENTE  === */
+.container-home {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    padding: 2rem 0;
+}
+
+.custom-card-utente {
+    background-color: #ffffff;
+    border-radius: 1.5rem;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.row-credito {
+    min-height: 400px;
+}
+
+.credito-box, .corsa-box {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 0;
+    background-color: #f8fff7;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.credito-box h3,
+.corsa-box h3 {
+    font-size: 1.5rem;
+    color: #2f4538;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 1rem;
+}
+
+.button-utente {
+    background-color: #6da97b !important;
+    color: white !important;
+    border-radius: 10px !important;
+    padding: 0.6rem 1.5rem !important;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.25s ease-in-out;
+}
+
+.button-utente:hover {
+    background-color: #5c9269 !important;
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+.custom-card-2 {
+    background-color: #ffffff;
+    border-radius: 1.5rem;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-body-utente {
+    display: flex;
+    flex-direction: column;
+}
+
+.value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #198754;
+    text-align: center;
+}
+
+.bordo {
+    border-right: 1px solid #DAE6C4;
+    margin-top: 1%;
+    margin-bottom: 1%;
+}
+
+.map-container {
+    width: 100%;
+    height: 100%;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* GESTORE */
+.dashboard-gestore {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.dashboard-card {
+    background-color: #ffffff;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    width: 250px;
+    text-align: center;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.div-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.card-box {
+    background-color: #ffffff;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    border:none;
+    width: 280px;
+    height: 180px;
+    text-align: center;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card-box i {
+    font-size: 2.2rem;
+    color: #198754;
+    margin-bottom: 0.5rem;
+}
+
+.card-box h3 {
+    font-size: 1.2rem;
+    color: #2f4538;
+    font-weight: 600;
+    margin: 0;
+}
+
+.link-box {
+    text-decoration: none;
+}
+
+.categoria {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.2rem;
+    color: #2f4538;
+    font-weight: 600;
+}
+
+.quantita {
+    font-size: 2rem;
+    color: #198754;
+    font-weight: bold;
+    margin: 0;
+}

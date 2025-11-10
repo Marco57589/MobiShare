@@ -1,0 +1,142 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: url('../images/Background.png') no-repeat center center fixed;
+    background-size: cover;
+}
+
+.inter-regular {
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 100;
+    font-style: normal;
+}
+
+.itim-regular {
+    font-family: "Itim", cursive;
+    font-weight: 100;
+    font-style: normal;
+}
+
+.register-page {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100vh;
+    padding: 2rem;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.register-left {
+    flex: 1;
+    padding-left: 20%;
+    padding-bottom: 20%;
+    color: #2f4538;
+}
+
+.brand-title {
+    font-size: 5rem;
+    font-weight: 500;
+    font-family: 'Itim';
+    color: #000;
+    margin-bottom: 0.5rem;
+}
+
+.brand-subtitle {
+    font-size: 2rem;
+    font-family: 'Itim';
+    font-weight: 400;
+    color: #000;
+}
+
+.register-form-container {
+    flex: 0 0 380px;
+    background-color: #fff;
+    border-radius: 1.3em;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    padding: 2rem;
+    margin-right: 5%;
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.register-title {
+    font-family: 'Itim';
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: #333;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    padding: 0.7rem;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+.register-button {
+    background-color: #6da97b;
+    color: black;
+    padding: 0.5rem;
+    font-family: "Inter", sans-serif;
+    font-size: 1rem;
+    border: none;
+    border-radius: 10px;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 50%;
+    align-self: center;
+}
+
+.register-button:hover {
+    background-color: #5a8f6a;
+}
+
+.alert {
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    margin: 0.5rem 0;
+    text-align: center;
+}
+
+.alert.error {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.alert.success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.extra-links {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.extra-links a {
+    color: #2f4538;
+    text-decoration: underline;
+}
+
+.extra-links a:hover {
+    text-decoration: none;
+}

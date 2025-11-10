@@ -1,0 +1,56 @@
+<link rel="stylesheet" href="/css/navbar.css">
+<nav class="navbar navbar-expand-lg ">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <img src="/images/logo.png" alt="Logo" class="logo-brand">
+            <div class="nav-brand-title">Mobishare</div>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item item">
+                    <a class="nav-link nav-l <%= currentPage === 'prodotti' ? 'active' : '' %>" href="products">Prodotti</a>
+                </li>
+                <li class="nav-item item">
+                    <a class="nav-link nav-l <%= currentPage === 'rate' ? 'active' : '' %>" href="/rate">Tariffe</a>
+                </li>
+                <% if(user && user.ruolo === 'utente') { %>
+                    <li class="nav-item item">
+                        <a class="nav-link nav-l <%= currentPage === 'shop' ? 'active' : '' %>" href="/shop">Shop</a>
+                    </li>
+                    <li class="nav-item item">
+                        <a class="nav-link nav-l <%= currentPage === 'shop' ? 'active' : '' %>" href="/rides">Rides</a>
+                    </li>
+                <% } %>
+                <% if(user.ruolo === 'gestore') { %>
+                    <li class="nav-item item">
+                        <a class="nav-link nav-l <%= currentPage === 'feedback' ? 'active' : '' %>" href="/feedback">Feedback</a>
+                    </li>
+                <% } %>
+            </ul>
+            <ul class="navbar-nav">
+                <% if (user) { %>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <%= user.displayName || user.email %>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile">Profilo</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                <% } else { %>
+                    <li class="nav-item">
+                        <a class="nav-link <%= currentPage === 'login' ? 'active' : '' %>" href="/login">Accedi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <%= currentPage === 'register' ? 'active' : '' %>" href="/register">Registrati</a>
+                    </li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+</nav>

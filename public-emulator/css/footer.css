@@ -1,0 +1,75 @@
+.footer-emulator {
+    background: #111;
+    color: #ddd;
+    padding: 2rem 3rem;
+    font-family: 'Poppins', sans-serif;
+    border-top: 2px solid #00ff88;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.footer-left {
+    flex: 1;
+    min-width: 260px;
+}
+
+.footer-title {
+    font-size: 1.6rem;
+    color: #00ff88;
+    margin-bottom: 0.4rem;
+}
+
+.footer-subtitle {
+    font-size: 1rem;
+    color: #ccc;
+    margin-bottom: 0.6rem;
+}
+
+.footer-description {
+    font-size: 0.9rem;
+    color: #999;
+    max-width: 400px;
+    line-height: 1.5;
+}
+
+.footer-right {
+    flex: 1;
+    min-width: 220px;
+}
+
+.footer-heading {
+    font-size: 1.2rem;
+    color: #00ff88;
+    margin-bottom: 0.8rem;
+}
+
+.footer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-list li {
+    margin: 0.4rem 0;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.footer-list li:hover {
+    color: #00ff88;
+}
+
+.footer-bottom {
+    text-align: center;
+    border-top: 1px solid #222;
+    padding-top: 1rem;
+    margin-top: 2rem;
+    font-size: 0.85rem;
+    color: #777;
+}

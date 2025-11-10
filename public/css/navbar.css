@@ -1,0 +1,41 @@
+.logo-brand {
+    height: 5vh !important;
+}
+
+.navbar {
+    background-color: #DAE6C4 !important;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.inter-regular {
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 100;
+    font-style: normal;
+}
+
+.navbar-brand {
+    font-family: "Inter", sans-serif !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    margin-right: 2em;
+}
+
+.nav-l:active {
+    background-color: white !important;
+    border-radius: 0.5em !important;
+}
+
+.nav-l {
+    border-radius: 0.5em !important;
+}
+
+.item {
+    padding-right: 0.5em;
+}
+
+.navbar-collapse {
+    font-family: 'Inter', cursive !important;
+}

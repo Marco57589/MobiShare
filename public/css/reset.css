@@ -1,0 +1,110 @@
+body {
+    background: url('../images/reset_password.png') no-repeat center center fixed;
+    background-size: cover;
+}
+
+.card {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-radius: 1.3em;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    border: none;
+}
+
+.div-reset {
+    width: 100%;
+}
+
+.itim-regular {
+    font-family: "Itim", cursive;
+    font-weight: 100;
+    font-style: normal;
+}
+
+.inter-regular {
+    font-family: "Inter", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 100;
+    font-style: normal;
+}
+
+.title {
+    font-family: 'Itim';
+    font-size: 2rem !important;
+    color: #000;
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    background-color: #6da97b !important;
+    color: black !important;
+    font-family: 'Itim', cursive;
+    border-top-left-radius: 1.3em !important;
+    border-top-right-radius: 1.3em !important;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.card-header h2 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control {
+    padding: 0.7rem;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.btn-primary {
+    display: block;
+    margin: 0 auto;
+    background-color: #6da97b;
+    color: black;
+    padding: 0.5rem;
+    font-family: "Inter", sans-serif;
+    font-size: 1rem;
+    border: none;
+    border-radius: 10px;
+    width: 200px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #5a8f6a;
+    color: black;
+}
+
+.alert {
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.text-center a {
+    color: #2f4538;
+    text-decoration: underline;
+}
+
+.text-center a:hover {
+    text-decoration: none;
+}
+
+.container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

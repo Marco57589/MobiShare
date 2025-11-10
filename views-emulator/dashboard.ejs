@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="/css/emulator.css">
+	<title>Mobishare EMULATOR</title>
+	<script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+
+	<div class="page-wrapper">
+
+		<div class="header">
+			<h1>MobiShare - Emulator</h1>
+			<div class="filter-buttons">
+				<button id="filter-all" class="filter-btn active">Tutti</button>
+				<button id="filter-available" class="filter-btn">Disponibili</button>
+				<button id="filter-unavailable" class="filter-btn">Non disponibili</button>
+			</div>
+
+		</div>
+		<div class="stats">Vicoli presenti:
+			<span id="vehicle-count"><%= vehicles?.length || 0 %></span>
+		</div>
+		<div class="vehicle-grid" id="vehicle-grid">
+			<% if (!vehicles || vehicles.length === 0) { %>
+			<div class="empty-state">
+				<h3>In attesa dei veicoli...</h3>
+			</div>
+			<% } else { %>
+			<% vehicles.forEach(vehicle => { %>
+			<div class="vehicle-card <%= vehicle.stato.toLowerCase().replace(' ', '-') %>">
+				<div class="light-indicator on" style="background: <%= vehicle.luce?.color || '#888' %>"></div>
+				<div class="vehicle-id">Veicolo #<%= vehicle.id %></div>
+				<div class="vehicle-status"><%= vehicle.stato %></div>
+				<!-- Sezione Batteria -->
+				<div class="battery-section">
+					<div class="battery-label">Batteria</div>
+					<%
+                            const percent = (typeof vehicle.batteria === 'number') ? vehicle.batteria : null;
+                            let battClass = 'battery-gray';
+                            if (percent !== null) {
+                                if (percent >= 60)
+                                    battClass = 'battery-green';
+                                else if (percent >= 25)
+                                    battClass = 'battery-yellow';
+                                else
+                                    battClass = 'battery-red';
+                            }
+                        %>
+					<div class="battery-indicator <%= battClass %>" title="Batteria: <%= percent !== null ? percent + '%' : 'N/D' %>">
+					</div>
+					<div class="battery-value"><%= percent !== null ? percent + '%' : '—' %></div>
+				</div>
+				<!-- Sezione Sblocco/Blocco veicoli -->
+				<div class="action-buttons">
+					<button class="action-button block-button" data-vehicle-id="<%= vehicle.id %>" <%= vehicle.stato !== 'Disponibile' ? 'disabled' : '' %>>
+						Blocca
+					</button>
+					<button class="action-button unblock-button" data-vehicle-id="<%= vehicle.id %>" <%= vehicle.stato !== 'Non disponibile' ? 'disabled' : '' %>>
+						Sblocca
+					</button>
+				</div>
+			</div>
+			<% }); %>
+			<% } %>
+		</div>
+
+		<script>
+			const socket = io();
+			const vehicleGrid = document.getElementById('vehicle-grid');
+			const vehicleCount = document.getElementById('vehicle-count');
+
+
+
+
+			const filterButtons = document.querySelectorAll('.filter-btn');
+			let currentFilter = 'all';
+			let currentVehicles = [];
+
+			// Gestione click sui pulsanti filtro
+			filterButtons.forEach(btn => {
+				btn.addEventListener('click', () => {
+					filterButtons.forEach(b => b.classList.remove('active'));
+					btn.classList.add('active');
+					currentFilter = btn.id.replace('filter-', '');
+					renderVehicles();
+				});
+			});
+
+			// ===== AGGIORNAMENTO VEICOLI =====
+			socket.on('vehicle-update', (vehicles) => {
+				currentVehicles = vehicles;
+				renderVehicles();
+			});
+
+			// ===== FUNZIONE DI RENDERING =====
+			function renderVehicles() {
+				let filteredVehicles = currentVehicles;
+
+				if (currentFilter === 'available') {
+					filteredVehicles = currentVehicles.filter(v => v.stato === 'Disponibile');
+				} else if (currentFilter === 'unavailable') {
+					filteredVehicles = currentVehicles.filter(v => v.stato === 'Non disponibile');
+				}
+
+				vehicleCount.textContent = filteredVehicles.length;
+
+				if (!filteredVehicles || filteredVehicles.length === 0) {
+					vehicleGrid.innerHTML = `
+                <div class="empty-state">
+                    <h3>Nessun veicolo trovato...</h3>
+                </div>
+            `;
+					return;
+				}
+
+				vehicleGrid.innerHTML = filteredVehicles.map(vehicle => {
+					const percent = (typeof vehicle.batteria === 'number') ? vehicle.batteria : null;
+					let battClass = 'battery-gray';
+					if (percent !== null) {
+						if (percent >= 60) battClass = 'battery-green';
+						else if (percent >= 25) battClass = 'battery-yellow';
+						else battClass = 'battery-red';
+					}
+
+					const statoClass = (vehicle.stato || '').toLowerCase().replace(' ', '-');
+					const blockDisabled = vehicle.stato !== 'Disponibile';
+					const unblockDisabled = vehicle.stato !== 'Non disponibile';
+
+					return `
+                <div class="vehicle-card ${statoClass}">
+                    <div class="light-indicator on" style="background: ${vehicle.luce?.color || '#888'}"></div>
+                    <div class="vehicle-id">Veicolo #${vehicle.id}</div>
+                    <div class="vehicle-status">${vehicle.stato}</div>
+
+                    <div class="battery-section">
+                        <div class="battery-label">Batteria</div>
+                        <div class="battery-indicator ${battClass}" title="Batteria: ${percent !== null ? percent + '%' : 'N/D'}"></div>
+                        <div class="battery-value">${percent !== null ? `${percent}%` : '—'}</div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="action-button block-button" data-vehicle-id="${vehicle.id}" ${blockDisabled ? 'disabled' : ''}>Blocca</button>
+                        <button class="action-button unblock-button" data-vehicle-id="${vehicle.id}" ${unblockDisabled ? 'disabled' : ''}>Sblocca</button>
+                    </div>
+                </div>
+            `;
+				}).join('');
+
+				// Ricollega i pulsanti
+				document.querySelectorAll('.block-button').forEach(button => {
+					button.addEventListener('click', handleBlockVehicle);
+				});
+				document.querySelectorAll('.unblock-button').forEach(button => {
+					button.addEventListener('click', handleUnblockVehicle);
+				});
+			}
+
+			// ===== FUNZIONI DI CONTROLLO =====
+			function handleBlockVehicle(event) {
+				const vehicleId = event.target.getAttribute('data-vehicle-id');
+				sendVehicleCommand(vehicleId, 'blocca');
+			}
+
+			function handleUnblockVehicle(event) {
+				const vehicleId = event.target.getAttribute('data-vehicle-id');
+				sendVehicleCommand(vehicleId, 'sblocca');
+			}
+
+			function sendVehicleCommand(vehicleId, action) {
+				fetch(`/mezzo/${vehicleId}/${action}`, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					})
+					.then(response => {
+						if (!response.ok) {
+							return response.text().then(text => {
+								throw new Error(text);
+							});
+						}
+						return response.text();
+					})
+					.then(message => {
+						console.log(`Comando ${action} per veicolo ${vehicleId}: ${message}`);
+						alert(`Comando ${action} inviato con successo!`);
+					})
+					.catch(error => {
+						console.error(`Errore nel comando ${action} per veicolo ${vehicleId}:`, error);
+						alert(`Errore: ${error.message}`);
+					});
+			}
+		</script>
+
+	</div>
+</body>
+<%- include('partials/footer') %>
+
+</html>

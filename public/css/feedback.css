@@ -1,0 +1,71 @@
+main {
+    flex: 1;
+}
+
+.name {
+    height: 25px;
+}
+
+.testo {
+    font-family: "Itim", sans-serif;
+}
+
+/* Titolo */
+h1.testo {
+    color: #030303;
+    font-family: 'Itim', cursive;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+/* Testo info */
+p.testo {
+    color: #0d6efd;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.2rem;
+}
+
+/* Card feedback */
+.list-group-item {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    padding: 1.2rem 1.5rem;
+}
+
+/* Utente e data */
+.list-group-item h5 {
+    color: #198754;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+}
+
+.list-group-item small {
+    color: #6c757d;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Feedback testo */
+.list-group-item p {
+    font-size: 1.1rem;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Alert danni */
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border-left: 6px solid #ffc107;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Lista danni */
+.alert-warning ul {
+    padding-left: 1.2em;
+    margin-bottom: 0;
+}

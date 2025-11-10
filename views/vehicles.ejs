@@ -1,0 +1,80 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<div class="container my-5">
+    <h1 class="mb-4">Veicoli Disponibili</h1>
+
+    <% if (locals.error) { %>
+    <div class="alert alert-danger">
+        <%= error %>
+    </div>
+    <% } %>
+    
+    <% if (locals.success) { %>
+    <div class="alert alert-success">
+        <%= success %>
+    </div>
+    <% } %>
+
+    <div class="row g-4">
+        <% if (!locals.vehicles || vehicles.length === 0) { %>
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Non ci sono veicoli disponibili al momento.
+                </div>
+            </div>
+        <% } else { %>
+            <% vehicles.forEach(vehicle => { %>
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= vehicle.type === 'bike' ? '🚲' : '🛴' %> <%= vehicle.name %></h5>
+                            <p class="card-text">
+                                <strong>Posizione:</strong> <%= vehicle.location %><br>
+                                <strong>Batteria:</strong> <%= vehicle.battery %>%<br>
+                                <strong>Stato:</strong> <%= vehicle.available ? 'Disponibile' : 'Non disponibile' %><br>
+                                <strong>Tariffa:</strong> <%= vehicle.pricePerMinute.toFixed(2) %> €/min
+                            </p>
+                        </div>
+                        <div class="card-footer bg-white border-top-0">
+                            <% if (vehicle.available) { %>
+                                <button type="button" class="btn btn-primary w-100"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#rentModal<%= vehicle.id %>">
+                                    Noleggia
+                                </button>
+                                
+                                <div class="modal fade" id="rentModal<%= vehicle.id %>" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Noleggia Veicolo</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form action="/rent-vehicle" method="POST">
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="vehicleId" value="<%= vehicle.id %>">
+                                                    <p>Stai per noleggiare questo veicolo:</p>
+                                                    <p><%= vehicle.type === 'bike' ? 'Bicicletta' : 'Monopattino' %> <%= vehicle.name %></p>
+                                                    <p class="fw-bold">Costo: <%= vehicle.pricePerMinute.toFixed(2) %> €/min</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                                    <button type="submit" class="btn btn-primary">Conferma Noleggio</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } else { %>
+                                <button class="btn btn-primary w-100" disabled>Non Disponibile</button>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

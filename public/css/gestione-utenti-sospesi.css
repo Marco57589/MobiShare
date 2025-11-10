@@ -1,0 +1,35 @@
+main {
+    flex: 1;
+}
+
+.page-title {
+    font-family: 'Itim', cursive;
+    font-size: 2.5rem;
+    color: #2f4538;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 1.3em;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.table {
+    font-family: 'Inter', sans-serif;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.btn-success {
+    background-color: #6da97b;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    padding: 0.4rem 1rem;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #5a8f6a;
+}

@@ -1,0 +1,72 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<link rel="stylesheet" href="/css/pagina-mezzi.css">
+
+<div class="container prodotti-page text-center my-5">
+    <h1 class="prodotti-title mb-4">I nostri mezzi</h1>
+    <div class="row justify-content-center g-4 mt-5">
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="card h-100 shadow rounded-4"
+                 data-bs-toggle="modal"
+                 data-bs-target="#vehicleModal"
+                 data-title="Bicicletta muscolare classica"
+                 data-description="Una bici comoda e tradizionale, ideale per gli spostamenti quotidiani.">
+                <img src="/images/bici.png" class="card-img-top p-3" alt="Bici muscolare">
+                <div class="card-body">
+                    <p class="card-text prodotto-descrizione">Bicicletta muscolare classica</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="card h-100 shadow rounded-4"
+                 data-bs-toggle="modal"
+                 data-bs-target="#vehicleModal"
+                 data-title="Bicicletta elettrica"
+                 data-description="Perfetta per percorsi urbani, ti aiuta a muoverti con facilità grazie all'assistenza elettrica.">
+                <img src="/images/bici_elettrica.png" class="card-img-top p-3" alt="Bici elettrica">
+                <div class="card-body">
+                    <p class="card-text prodotto-descrizione">Bicicletta elettrica</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="card h-100 shadow rounded-4"
+                 data-bs-toggle="modal"
+                 data-bs-target="#vehicleModal"
+                 data-title="Monopattino elettrico pieghevole"
+                 data-description="Compatto, veloce e sostenibile. Ideale per brevi spostamenti urbani.">
+                <img src="/images/monopattino.png" class="card-img-top p-3" alt="Monopattino elettrico">
+                <div class="card-body">
+                    <p class="card-text prodotto-descrizione">Monopattino elettrico pieghevole</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="vehicleModal" tabindex="-1" aria-labelledby="vehicleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4">
+      <div class="modal-header">
+        <h5 class="modal-title" id="vehicleModalLabel">Titolo veicolo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+      </div>
+      <div class="modal-body">
+        <p id="vehicleModalBody">Descrizione del veicolo...</p>
+        <% if(user.ruolo == 'utente'){ %>
+          <div class="text-center mt-4">
+            <a href="/avvia-corsa" id="vehicleModalBtn" class="btn btn-success px-4">Prenota</a>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/js/modal.js"></script>
+
+<%- include('partials/footer') %>

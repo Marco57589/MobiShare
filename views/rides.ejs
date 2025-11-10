@@ -1,0 +1,78 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<link rel="stylesheet" href="/css/rides.css">
+<link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet">
+
+<main class="container mt-5 mb-5 flex-grow-1">
+    <h1 class="page-title text-center mb-4">Cronologia delle mie corse</h1>
+
+    <div class="card shadow rounded-4 p-4">
+        <% if (rides && rides.length > 0) { %>
+            <table class="table table-hover table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Data e Ora</th>
+                        <th>Mezzo</th>
+                        <th>Punto di Partenza</th>
+                        <th>Destinazione</th>
+                        <th>Durata</th>
+                        <th>Prezzo</th>
+                        <th>Stato</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% rides.forEach(ride => { %>
+                        <tr>
+                            <td>
+                                <%= ride.startTime.toDate().toLocaleString('it-IT', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }) %>
+                            </td>
+                            <td><%= ride.mezzoTipo %> #<%= ride.mezzoId %></td>
+                            <td><%= ride.parcheggioPartenzaNome %></td>
+                            <td>
+                                <% if (ride.parcheggioArrivoNome) { %>
+                                    <%= ride.parcheggioArrivoNome %>
+                                <% } else { %>
+                                    <span class="text-muted">Non specificato</span>
+                                <% } %>
+                            </td>
+                            <td><%= ride.durataMinuti || 0 %> min</td>
+                            <td>€<%= (ride.costo || 0).toFixed(2) %></td>
+                            <td>
+                                <% if (ride.status === 'completata') { %>
+                                    <span class="badge bg-success">Completata</span>
+                                <% } else if (ride.status === 'completata_automatica') { %>
+                                    <span class="badge bg-info">Completata (auto)</span>
+                                <% } else if (ride.status === 'annullata') { %>
+                                    <span class="badge bg-danger">Annullata</span>
+                                <% } else { %>
+                                    <span class="badge bg-warning"><%= ride.status %></span>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-bicycle fa-3x text-muted"></i>
+                </div>
+                <h4 class="text-muted">Nessuna corsa effettuata</h4>
+                <p class="text-muted">Non hai ancora effettuato nessuna corsa con MobiShare.</p>
+                <a href="/avvia-corsa" class="btn color-rides mt-3">
+                    <i class="me-2"></i>Inizia la tua prima corsa
+                </a>
+            </div>
+        <% } %>
+    </div>
+</main>
+
+<%- include('partials/footer') %>

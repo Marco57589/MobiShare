@@ -1,0 +1,391 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+<script src="https://js.stripe.com/v3/"></script>
+<script src="/js/stripe-payments.js"></script>
+<script src="/js/face-recognition.js"></script>
+
+<style>
+    .ride-detail-card {
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .ricarica-input {
+        font-size: 1.2rem;
+        font-weight: bold;
+        text-align: center;
+    }
+    .timer-warning {
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+        border-left: 4px solid #ffc107;
+    }
+    .timer-danger {
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+        border-left: 4px solid #dc3545;
+    }
+    .stripe-element {
+        padding: 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: white;
+    }
+</style>
+
+<main class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="alert <%= ride.minutiRimanenti > 15 ? 'timer-warning' : (ride.minutiRimanenti > 5 ? 'alert-warning' : 'alert-danger') %> mb-4" id="timerAlert">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="alert-heading mb-1">
+                            <i class="fas fa-clock me-2"></i>
+                            <% if (ride.importoRimanente > 0) { %>
+                                Tempo rimanente per il pagamento
+                            <% } else { %>
+                                Tempo rimanente per terminare la corsa
+                            <% } %>
+                        </h5>
+                        <p class="mb-0" id="timerText">
+                            <%= ride.minutiRimanenti %> minuti rimanenti
+                            <% if (ride.importoRimanente <= 0) { %>
+                                - <strong>Il sistema addebiterà automaticamente al termine del tempo</strong>
+                            <% } %>
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <% if (ride.importoRimanente > 0) { %>
+                            <h4 class="text-danger mb-0" id="importoRimanenteDisplay">€ <%= ride.importoRimanente.toFixed(2) %></h4>
+                            <small class="text-muted">Importo da pagare</small>
+                        <% } else { %>
+                            <h4 class="text-success mb-0">€ <%= ride.costo.toFixed(2) %></h4>
+                            <small class="text-muted">Verrai addebitato automaticamente</small>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="progress mt-2" style="height: 8px;">
+                    <div id="timerProgress"
+                         class="progress-bar <%= ride.minutiRimanenti > 15 ? 'bg-success' : (ride.minutiRimanenti > 5 ? 'bg-warning' : 'bg-danger') %>"
+                         style="width: <%= (ride.minutiRimanenti / 30) * 100 %>%">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card ride-detail-card mb-4">
+                <div class="card-header">
+                    <h2 class="h5 mb-0 page-title">Riepilogo Corsa</h2>
+                </div>
+
+                <div class="card-body">
+                    <form id="riepilogoForm" action="/conferma-termine-corsa" method="POST">
+                        <input type="hidden" name="rideId" value="<%= ride.id %>">
+                        <%
+                        var _costo = Number(ride.costo || 0);
+                        var _saldo = Number((user && user.saldo) || 0);
+                        var saldoPost = Number((_saldo - _costo).toFixed(2));
+                        var debito = saldoPost < 0 ? Math.abs(saldoPost) : 0;
+                        var importoMaxRicarica = debito > 0 ? debito : 0;
+                        var mezzoStr = (ride.mezzoTipo || '').toLowerCase();
+                        var puntiUtente = Number((user && user.puntiFedelta) || 0);
+                        var puntiGuadagnati = isMezzoElettrico ? 0 : Number((1 + (_costo / 10)).toFixed(2));
+                        var puntiTotali = Number((puntiUtente + puntiGuadagnati).toFixed(2));
+                        %>
+
+                        <div class="mb-3">
+                            <label for="parcheggioArrivo" class="form-label fw-bold">Parcheggio di arrivo</label>
+                            <select id="parcheggioArrivoSelect" name="parcheggioArrivo" class="form-select" required>
+                                <%
+                                const parcheggioRandom = parcheggi.length > 0 ? parcheggi[Math.floor(Math.random() * parcheggi.length)] : null;
+                                const parcheggioSelezionatoId = ride.parcheggioArrivoId || (parcheggioRandom ? parcheggioRandom.id : '');
+                                %>
+
+                                <% parcheggi.forEach(function(p){ %>
+                                    <option value="<%= p.id %>"
+                                            <%= (parcheggioSelezionatoId === p.id ? 'selected' : '') %>>
+                                        <%= p.nome %> – <%= p.via %>
+                                    </option>
+                                <% }) %>
+                            </select>
+                            <div class="form-text">
+                                <i class="fas fa-random me-1"></i>
+                                Il mezzo verrà restituito al parcheggio più vicino automaticamente.
+                            </div>
+                        </div>
+
+                        <% if (isMezzoElettrico) { %>
+                            <div class="mb-4">
+                                <h3 class="h6 section-title fw-bold">Stato Batteria</h3>
+                                <div class="progress" style="height: 25px;">
+                                    <div class="progress-bar <%= ride.batteria > 70 ? 'bg-success' : (ride.batteria > 30 ? 'bg-warning' : 'bg-danger') %>"
+                                         role="progressbar" style="width: <%= ride.batteria %>%" aria-valuenow="<%= ride.batteria %>" aria-valuemin="0" aria-valuemax="100">
+                                        <%= ride.batteria %>%
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="batteria" value="<%= ride.batteria %>">
+                        <% } %>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Danni tecnici riscontrati</label>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="danni" value="Ruota danneggiata" id="danno1">
+                                <label class="form-check-label" for="danno1">Ruota danneggiata</label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="danni" value="Freni non funzionanti" id="danno2">
+                                <label class="form-check-label" for="danno2">Freni non funzionanti</label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="danni" value="Batteria scarica" id="danno3">
+                                <label class="form-check-label" for="danno3">Batteria scarica</label>
+                            </div>
+
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="dannoAltroToggle">
+                                <label class="form-check-label" for="dannoAltroToggle">Altro...</label>
+                            </div>
+                            <input type="text"
+                                   class="form-control mt-2"
+                                   id="dannoAltroInput"
+                                   name="dannoAltro"
+                                   placeholder="Specifica altro danno..."
+                                   style="display:none;">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="feedback" class="form-label fw-bold">Feedback sul servizio</label>
+                            <textarea name="feedback" class="form-control" rows="3" placeholder="Condividi la tua esperienza..."></textarea>
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-4">
+                            <h3 class="h6 section-title fw-bold">Informazioni Corsa</h3>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Mezzo:</strong> <%= ride.mezzoTipo %> #<%= ride.mezzoId %></p>
+                                    <p><strong>Partenza:</strong> <%= ride.parcheggioPartenza %></p>
+                                    <p><strong>Ora inizio:</strong> <%= ride.startTime %></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Durata:</strong> <%= ride.durataMinuti %> minuti</p>
+                                    <p><strong>Arrivo:</strong> <span id="infoParcheggioArrivo">-</span></p>
+                                    <p><strong>Ora fine:</strong> <%= ride.endTime %></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 p-3 rounded" style="background-color: <%= isMezzoElettrico ? '#fff3cd' : '#e8f5e8' %>;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="h6 mb-1 fw-bold">
+                                        <%= isMezzoElettrico ? 'Punti mobilità che avresti potuto guadagnare:' : 'Punti mobilità guadagnati' %>
+                                    </h3>
+                                    <p class="mb-0 text-muted small">
+                                        <%= isMezzoElettrico ? 'Utilizzando mezzi assistiti non guadagnerai punti mobilità!' : 'Hai guadagnato punti per questa corsa!' %>
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    <% if (isMezzoElettrico) { %>
+                                        <h3 class="h4 text-primary mb-0"><%= possibileGuadagno.toFixed(2) %></h3>
+                                        <p class="mb-0 small">Totale punti: <%= puntiTotali.toFixed(2) %></p>
+                                    <% } else { %>
+                                        <h3 class="h4 text-success mb-0">+<%= puntiGuadagnati.toFixed(2) %></h3>
+                                        <p class="mb-0 small">Totale punti: <%= puntiTotali.toFixed(2) %></p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 p-3 bg-light rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="h6 mb-1 fw-bold">Costo Corsa</h3>
+                                    <p class="mb-0 text-muted small">Costo calcolato per <%= ride.durataMinuti %> minuti</p>
+                                </div>
+                                <div class="text-end">
+                                    <h3 class="h4 text-primary mb-0">€ <%= _costo.toFixed(2) %></h3>
+                                    <p class="mb-0 small">Credito attuale: € <%= _saldo.toFixed(2) %></p>
+                                    <p class="mb-0 small">Credito residuo: € <%= saldoPost.toFixed(2) %></p>
+                                </div>
+                            </div>
+
+                            <% if (saldoPost < 0) { %>
+                                <div class="alert alert-danger mt-3 mb-0">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Saldo insufficiente!</strong> Ti mancano € <%= debito.toFixed(2) %> per chiudere la corsa.
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <% if (ride.importoRimanente > 0) { %>
+                                <button type="button" class="btn btn-success me-md-2" data-bs-toggle="modal" data-bs-target="#stripePaymentModal">
+                                    Ricarica Ora
+                                </button>
+                                <button type="button" class="btn btn-outline-warning me-md-2" data-bs-toggle="modal" data-bs-target="#pagaDopoModal">
+                                    Termina con Sospensione
+                                </button>
+                            <% } else { %>
+                                <button type="submit" class="btn btn-success">
+                                    Termina e salva
+                                </button>
+                            <% } %>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Termina con Sospensione -->
+<div class="modal fade" id="pagaDopoModal" tabindex="-1" aria-labelledby="pagaDopoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pagaDopoLabel">Conferma sospensione account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+            </div>
+            <div class="modal-body">
+                <% if (debito > 0) { %>
+                    <div class="alert alert-warning">
+                        <span class="material-icons me-2">warning</span>
+                        <strong>Attenzione!</strong> Il tuo account verrà <strong>sospeso</strong> finché non saldi il debito di € <%= debito.toFixed(2) %>.
+                    </div>
+                    <p class="mb-0">Non potrai effettuare nuove corse fino al pagamento.</p>
+                <% } else { %>
+                    <div class="alert alert-info">
+                        <span class="material-icons me-2">info</span>
+                        <strong>Informazione:</strong> Non hai debiti pendenti.
+                    </div>
+                <% } %>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                <% if (debito > 0) { %>
+                    <button type="submit" class="btn btn-warning" form="riepilogoForm">
+                        <i class="fas fa-user-lock me-2"></i>Conferma Sospensione
+                    </button>
+                <% } else { %>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/stripe-payment-modal') %>
+<%- include('partials/stripe-security-modal') %>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const stripeManager = initializeStripePayment('<%= stripePublishableKey %>');
+
+		// Configura il modal di ricarica per il riepilogo corsa
+		document.getElementById('stripePaymentModal').addEventListener('show.bs.modal', function() {
+            <% if (ride.importoRimanente > 0) { %>
+            <% if (debito > 0) { %>
+			const minAmount = <%= debito.toFixed(2) %>;
+			const infoMessage = 'Per terminare la corsa senza incorrere nella sospensione, ricarica almeno € ' + minAmount;
+            <% } else { %>
+			const minAmount = 0.01;
+			const infoMessage = 'Ricarica il tuo credito';
+            <% } %>
+
+			stripeManager.initializePayment(
+				minAmount,
+				100,
+				minAmount,
+				infoMessage
+			);
+            <% } %>
+		});
+		document.getElementById('stripePaymentModal').addEventListener('hidden.bs.modal', function() {
+			const urlParams = new URLSearchParams(window.location.search);
+			if (urlParams.has('success')) {
+				window.location.reload();
+			}
+		});
+	});
+</script>
+
+<script>
+	const endTime = new Date('<%= ride.endTimeISO %>');
+	const totaleSecondiOriginali = 20 * 60;
+	const timerAlert = document.getElementById('timerAlert');
+	const timerTextEl = document.getElementById('timerText');
+	const timerProgress = document.getElementById('timerProgress');
+
+	function updateTimer() {
+		const now = new Date();
+		let totaleSecondiRimanenti = Math.floor((endTime - now) / 1000);
+
+		if (totaleSecondiRimanenti <= 0) {
+			timerTextEl.textContent = 'TEMPO SCADUTO! Reindirizzamento...';
+			timerProgress.style.width = '0%';
+			timerAlert.classList.remove('timer-warning', 'alert-warning');
+			timerAlert.classList.add('alert-danger');
+
+			setTimeout(() => {
+				document.getElementById('riepilogoForm').submit();
+			}, 2000);
+			clearInterval(timerInterval);
+			return;
+		}
+
+		const minuti = Math.floor(totaleSecondiRimanenti / 60);
+		const secondi = totaleSecondiRimanenti % 60;
+		let timerText = `${minuti}:${secondi.toString().padStart(2, '0')} minuti rimanenti`;
+
+		if (<%= ride.importoRimanente %> <= 0) {
+			timerText += ' - Il sistema addebiterà automaticamente al termine del tempo';
+		}
+		timerTextEl.textContent = timerText;
+
+		const percentuale = (totaleSecondiRimanenti / totaleSecondiOriginali) * 100;
+		timerProgress.style.width = percentuale + '%';
+
+		timerProgress.classList.remove('bg-success', 'bg-warning', 'bg-danger');
+		timerAlert.classList.remove('timer-warning', 'alert-warning', 'alert-danger');
+
+		if (totaleSecondiRimanenti > 15 * 60) {
+			timerProgress.classList.add('bg-success');
+			timerAlert.classList.add('timer-warning');
+		} else if (totaleSecondiRimanenti > 5 * 60) {
+			timerProgress.classList.add('bg-warning');
+			timerAlert.classList.add('alert-warning');
+		} else {
+			timerProgress.classList.add('bg-danger');
+			timerAlert.classList.add('alert-danger');
+		}
+	}
+
+	const timerInterval = setInterval(updateTimer, 1000);
+	updateTimer();
+
+	const dannoAltroToggle = document.getElementById('dannoAltroToggle');
+	const dannoAltroInput = document.getElementById('dannoAltroInput');
+	if (dannoAltroToggle && dannoAltroInput) {
+		dannoAltroToggle.addEventListener('change', function () {
+			dannoAltroInput.style.display = this.checked ? 'block' : 'none';
+			if (!this.checked) dannoAltroInput.value = '';
+		});
+	}
+
+	const selectArrivo = document.getElementById('parcheggioArrivoSelect');
+	const infoArrivo = document.getElementById('infoParcheggioArrivo');
+	if (selectArrivo && infoArrivo) {
+		selectArrivo.addEventListener('change', () => {
+			const selectedOption = selectArrivo.options[selectArrivo.selectedIndex];
+			infoArrivo.textContent = selectedOption.text;
+		});
+		if (selectArrivo.selectedIndex > 0) {
+			infoArrivo.textContent = selectArrivo.options[selectArrivo.selectedIndex].text;
+		}
+	}
+</script>
+
+<%- include('partials/footer') %>

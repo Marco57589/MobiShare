@@ -1,0 +1,216 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+}
+
+.page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-emulator {
+    margin-top: auto;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #1a1a1a;
+    color: white;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+.stats {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
+
+.vehicle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.vehicle-card {
+    background: #2d2d2d;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    border: 2px solid #444;
+    transition: all 0.3s ease;
+}
+
+.vehicle-card.available {
+    border-color: #4CAF50;
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+}
+
+.vehicle-card.in-use {
+    border-color: #2196F3;
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.3);
+}
+
+.vehicle-card.unavailable {
+    border-color: #f44336;
+    box-shadow: 0 0 20px rgba(244, 67, 54, 0.3);
+}
+
+.light-indicator {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    border: 3px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+}
+
+.light-indicator.on {
+    box-shadow: 0 0 30px currentColor;
+}
+
+.vehicle-id {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.vehicle-status {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-bottom: 10px;
+}
+
+.last-update {
+    font-size: 0.8em;
+    opacity: 0.6;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    opacity: 0.7;
+}
+
+/* ===== Batteria ===== */
+
+.battery-section {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.battery-label {
+    font-size: 0.85em;
+    opacity: 0.8;
+}
+
+.battery-indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.12);
+    box-shadow: 0 0 12px currentColor;
+}
+
+/* Colori stato batteria */
+.battery-green  { background: #4CAF50; color: #4CAF50; }
+.battery-yellow { background: #FFC107; color: #FFC107; }
+.battery-red    { background: #F44336; color: #F44336; }
+
+/* Mezzo non elettrico */
+.battery-gray   { background: #9E9E9E; color: #9E9E9E; box-shadow: none; opacity: 0.7; }
+
+.battery-value {
+    font-size: 0.75em;
+    opacity: 0.85;
+}
+
+.action-buttons {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.action-button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.action-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.action-button:active {
+    transform: translateY(0);
+}
+
+.block-button {
+    background-color: #ff4444;
+    color: white;
+}
+
+.block-button:hover {
+    background-color: #cc0000;
+}
+
+.unblock-button {
+    background-color: #00aa00;
+    color: white;
+}
+
+.unblock-button:hover {
+    background-color: #008800;
+}
+
+.action-button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+.filter-buttons {
+    text-align: center;
+    margin: 15px 0;
+}
+
+.filter-btn {
+    background-color: #eee;
+    border: none;
+    padding: 8px 16px;
+    margin: 0 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    background-color: #ddd;
+}
+
+.filter-btn.active {
+    background-color: #007bff;
+    color: white;
+}

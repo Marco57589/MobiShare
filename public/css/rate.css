@@ -1,0 +1,50 @@
+.container {
+    flex: 1;
+}
+
+.container-rates {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 2rem;
+}
+
+.rates {
+    flex: 1 1 250px;
+    max-width: 300px;
+    background-color: white;
+    border-radius: 1em;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+}
+
+.rates:hover {
+    transform: scale(1.03);
+}
+
+.rate-title {
+    font-size: 1.5rem;
+    font-family: 'Itim', cursive;
+    color: #000;
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.rate-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    gap: 1rem;
+}
+
+.rate-item {
+    list-style: none;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+}

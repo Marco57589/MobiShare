@@ -1,0 +1,298 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<link rel="stylesheet" href="/css/chatbot.css">
+
+<div class="container-fluid">
+    <div class="row">
+        <main class="col-md-8 offset-md-2 main-content">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Assistente Mobishare</h1>
+            </div>
+
+            <div class="chatbot-container">
+                <div class="chat-header bg-verde text-white p-3 rounded-top">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0 text-black">
+                                <i class="fas fa-robot me-2"></i>Assistente MobiShare
+                            </h5>
+
+                            <small class="opacity-75 text-black">Powered by Gemini AI</small>
+                        </div>
+
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearChat()">
+                            <i class="fas fa-trash"></i> Pulisci Chat
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message ai-message">
+
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+
+                        <div class="message-content">
+                            <div class="message-header">
+                                <strong>Assistente MobiShare</strong>
+                                <small class="text-muted"><%= new Date().toLocaleTimeString('it-IT') %></small>
+                            </div>
+
+                            <div class="message-text">
+                                Ciao <strong><%= user.nome || user.email %></strong>! 👋<br>
+                                Sono il tuo assistente virtuale MobiShare.
+                                <% if (user.ruolo === 'gestore') { %>
+                                    Posso aiutarti con:
+                                    <ul class="mb-2">
+                                        <li>Analisi del posizionamento dei veicoli</li>
+                                        <li>Riepilogo dei feedback degli utenti</li>
+                                        <li>Gestione degli utenti (sospesi, ricerca)</li>
+                                        <li>Monitoraggio dei danni segnalati</li>
+                                    </ul>
+                                <% } else { %>
+                                    Posso aiutarti con:
+                                    <ul class="mb-2">
+                                        <li>Le tue corse e statistiche di utilizzo</li>
+                                        <li>Gestione crediti e storico pagamenti</li>
+                                        <li>Informazioni sui mezzi disponibili</li>
+                                        <li>Analisi dei tuoi pattern di utilizzo</li>
+                                        <li>Assistenza generale sul servizio</li>
+                                    </ul>
+                                <% } %>
+                                Cosa posso fare per te oggi?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reasoning-indicator" id="reasoningIndicator" style="display: none;">
+                    <div class="thinking-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span class="ms-2">L'assistente sta ragionando sulla tua richiesta...</span>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="userInput" placeholder="Scrivi la tua domanda qui..." aria-label="Messaggio per l'assistente" onkeypress="handleKeyPress(event)">
+
+                        <button class="btn bg-verde" type="button" onclick="sendMessage()" id="sendButton">
+                            <i class="fas fa-paper-plane"></i> Invia
+                        </button>
+                    </div>
+
+                    <div class="chat-suggestions mt-2">
+                        <small class="text-muted d-block mb-1">Suggerimenti rapidi:</small>
+                        <div class="d-flex flex-wrap gap-1">
+                            <% if (user.ruolo === 'gestore') { %>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="insertSuggestion('Analizza il posizionamento dei mezzi negli ultimi 3 giorni')">
+                                    Posizionamento mezzi
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="insertSuggestion('Mostrami gli utenti sospesi')">
+                                    Utenti sospesi
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="insertSuggestion('Cerca l\'utente con email example@email.com')">
+                                    Cerca utente
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="insertSuggestion('Ci sono nuovi danni segnalati?')">
+                                    Danni recenti
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="insertSuggestion('Fai un riepilogo dei feedback delle corse dell\'ultima settimana')">
+                                    Feedback corse
+                                </button>
+                            <% } else { %>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="insertSuggestion('Mostrami le mie corse recenti')">
+                                    Corse recenti
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="insertSuggestion('Quanti punti mobilità ho? come posso guadagnarli?')">
+                                    Punti mobilità
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="insertSuggestion('Analizza le mie abitudini di viaggio')">
+                                    Analisi utilizzo
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="insertSuggestion('Quali mezzi può fornire mobishare?')">
+                                    Mezzi disponibili
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="insertSuggestion('Come posso ricaricare il mio account?')">
+                                    Ricarica account
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="insertSuggestion('Mi hanno sospeso l\'account, cosa posso fare?')">
+                                    Account sospeso
+                                </button>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    let currentConversationId = localStorage.getItem('mobishare_conversation_id') || null;
+
+	function insertSuggestion(text) {
+		document.getElementById('userInput').value = text;
+		document.getElementById('userInput').focus();
+	}
+
+	function handleKeyPress(event) {
+		if (event.key === 'Enter') {
+			sendMessage();
+		}
+	}
+
+	function addUserMessage(message) {
+
+		const chatMessages = document.getElementById('chatMessages');
+
+		const messageElement = document.createElement('div');
+
+		messageElement.className = 'message user-message';
+
+		messageElement.innerHTML = `
+        <div class="message-content">
+            <div class="message-header">
+                <strong>Tu</strong>
+                <small class="text-muted">${new Date().toLocaleTimeString('it-IT')}</small>
+            </div>
+            <div class="message-text">${escapeHtml(message)}</div>
+        </div>`;
+		chatMessages.appendChild(messageElement);
+		scrollToBottom();
+	}
+
+
+	function addAIMessage(message, data = null) {
+		const chatMessages = document.getElementById('chatMessages');
+		const messageElement = document.createElement('div');
+		messageElement.className = 'message ai-message';
+
+		let additionalData = '';
+
+		if (data && data.length > 0) {
+			additionalData = `
+                <div class="additional-data mt-2">
+                    <small class="text-muted"><i class="fas fa-database me-1"></i>Dati utilizzati per la risposta</small>
+                </div>`;
+		}
+
+		messageElement.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas fa-robot"></i>
+        </div>
+
+        <div class="message-content">
+            <div class="message-header">
+                <strong>Assistente MobiShare</strong>
+                <small class="text-muted">${new Date().toLocaleTimeString('it-IT')}</small>
+            </div>
+            <div class="message-text">${formatMessage(message)}</div>
+            ${additionalData}
+        </div>
+
+    `;
+		chatMessages.appendChild(messageElement);
+		scrollToBottom();
+	}
+
+
+	function formatMessage(message) {
+		return escapeHtml(message)
+			.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+			.replace(/\*(.*?)\*/g, '<em>$1</em>')
+			.replace(/\n/g, '<br>')
+			.replace(/- (.*?)(<br>|$)/g, '• $1<br>');
+	}
+
+
+	function escapeHtml(unsafe) {
+		return unsafe
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;")
+			.replace(/'/g, "&#039;");
+	}
+
+
+	function scrollToBottom() {
+		const chatMessages = document.getElementById('chatMessages');
+		chatMessages.scrollTop = chatMessages.scrollHeight;
+	}
+
+
+	async function sendMessage() {
+		const input = document.getElementById('userInput');
+		const message = input.value.trim();
+
+		if (!message) return;
+		input.disabled = true;
+		document.getElementById('sendButton').disabled = true;
+		addUserMessage(message);
+		input.value = '';
+
+		document.getElementById('reasoningIndicator').style.display = 'flex';
+
+		try {
+			const response = await fetch('/api/chatbot/query', {
+				method: 'POST',
+				headers: {
+
+					'Content-Type': 'application/json',
+
+				},
+				body: JSON.stringify({
+					query: message,
+					conversation_id: currentConversationId
+				})
+			});
+
+			const data = await response.json();
+
+			if (!response.ok) {
+				throw new Error(data.error || 'Errore sconosciuto');
+			}
+			document.getElementById('reasoningIndicator').style.display = 'none';
+
+			addAIMessage(data.response, data.data_used);
+
+			if (data.conversation_id) {
+                currentConversationId = data.conversation_id;
+                localStorage.setItem('mobishare_conversation_id', currentConversationId);
+            }
+
+		} catch (error) {
+			console.error('Errore:', error);
+			document.getElementById('reasoningIndicator').style.display = 'none';
+			addAIMessage('Mi dispiace, c\'è stato un errore nel processare la tua richiesta. Riprova più tardi.');
+		} finally {
+			input.disabled = false;
+			document.getElementById('sendButton').disabled = false;
+			input.focus();
+		}
+	}
+
+
+	function clearChat() {
+		const chatMessages = document.getElementById('chatMessages');
+		const welcomeMessage = chatMessages.querySelector('.ai-message');
+
+		chatMessages.innerHTML = '';
+		if (welcomeMessage) {
+			chatMessages.appendChild(welcomeMessage);
+		}
+		currentConversationId = null;
+		scrollToBottom();
+		localStorage.removeItem('mobishare_conversation_id'); // reset
+	}
+
+	document.addEventListener('DOMContentLoaded', function () {
+		scrollToBottom();
+		document.getElementById('userInput').focus();
+	});
+</script>
+
+<%- include('partials/footer') %>

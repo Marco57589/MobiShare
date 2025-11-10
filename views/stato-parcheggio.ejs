@@ -1,0 +1,577 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<!-- Fonts & CSS -->
+<link rel="stylesheet" href="/css/stato-parcheggio.css">
+<link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet">
+
+<main class="container mt-5 mb-5 flex-grow-1">
+    <h1 class="page-title text-center mb-4">Stato del Parcheggio</h1>
+
+    <%- include('partials/error-box') %>
+
+    <!-- Pulsanti azione -->
+    <div class="d-flex justify-content-end gap-3 mb-3">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalSpostaMezzo">Sposta Mezzo</button>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAggiungiMezzo">Aggiungi Mezzo</button>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalAggiungiParcheggio">Aggiungi Parcheggio</button>
+    </div>
+
+    <div class="card shadow rounded-4 p-4">
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>Nome parcheggio</th>
+                    <th>Via</th>
+                    <th>Mezzi disponibili</th>
+                    <th>Stato</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% parcheggi.forEach(parcheggio => {
+                    const disponibili = parcheggio.mezzi.filter(m => m.stato === 'Disponibile').length;
+                %>
+                <tr>
+                    <td><%= parcheggio.nome %></td>
+                    <td><%= parcheggio.via %></td>
+                    <td><%= disponibili %> / <%= parcheggio.mezzi.length %></td>
+                    <td class = "parking-button">
+                        <button
+                                type="button"
+                                class="btn btn-success btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalParcheggio<%= parcheggio.id %>">
+                            Vedi dettagli
+                        </button>
+                        <button
+                                type="button"
+                                class="btn btn-success btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalModificaParcheggio<%= parcheggio.id %>">
+                            Altro
+                        </button>
+                    </td>
+                </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow rounded-4 p-4">
+                <div id="ml-error" class="alert alert-danger" style="display: none;">
+                    <strong>Errore:</strong> <span id="ml-error-text"></span>
+                </div>
+
+                <h3 class="text-center mb-4">Suggerimenti Distribuzione</h3>
+                <div class="text-center mb-3">
+                    <p>Analizza le corse per ottenere suggerimenti su come ottimizzare la distribuzione dei mezzi</p>
+                    <button class="btn btn-success px-4" onclick="addestraModello()">Aggiorna Modello</button>
+                </div>
+
+                <div class="card-body">
+                    <div id="ml-loading" class="text-center py-3" style="display: none;">
+                        <div class="spinner-border mobishareTextPrimary" role="status">
+                            <span class="visually-hidden">Caricamento...</span>
+                        </div>
+                        <p class="mt-2">Analizzando i dati per ottimizzare la distribuzione...</p>
+                    </div>
+
+                    <div id="ml-suggestions">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modali dettagli veicoli -->
+    <% parcheggi.forEach(parcheggio => { %>
+        <div class="modal fade" id="modalParcheggio<%= parcheggio.id %>" tabindex="-1" aria-labelledby="modalLabel<%= parcheggio.id %>" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content rounded-4">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalLabel<%= parcheggio.id %>">Dettagli Parcheggio <%= parcheggio.nome%></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                    </div>
+                    <div class="modal-body">
+                        <% if (parcheggio.mezzi.length === 0) { %>
+                            <p class="text-muted">Nessun veicolo presente in questo parcheggio.</p>
+                        <% } else { %>
+                            <table class="table table-hover table-bordered align-middle">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tipo Veicolo</th>
+                                    <th>Stato</th>
+                                    <th>Batteria</th>
+                                    <th>Stato Luce</th>
+                                    <th>Azioni</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <% parcheggio.mezzi.forEach(veicolo => { %>
+                                    <tr>
+                                        <td><%= veicolo.id %></td>
+                                        <td><%= veicolo.tipo %></td>
+                                        <td>
+							<span class="badge bg-<%= veicolo.stato === 'Disponibile' ? 'success' : (veicolo.stato === 'In uso' ? 'primary' : 'danger') %>">
+								<%= veicolo.stato %>
+							</span>
+                                        </td>
+                                        <td>
+                                            <% if (veicolo.isElettrico && veicolo.batteria !== null) { %>
+                                                <div class="progress" style="height: 20px; width: 80px;">
+                                                    <div class="progress-bar <%= veicolo.batteria > 70 ? 'bg-success' : (veicolo.batteria > 30 ? 'bg-warning' : 'bg-danger') %>"
+                                                         style="width: <%= veicolo.batteria %>%">
+                                                        <small><%= veicolo.batteria %>%</small>
+                                                    </div>
+                                                </div>
+                                            <% } else { %>
+                                                <span class="text-muted">N/A</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <!-- Indicatore stato luce -->
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-2" style="width: 16px; height: 16px; border-radius: 50%;
+                                                        background-color:<%= veicolo.stato === 'Disponibile' ? '#28a745' :
+                                                        (veicolo.stato === 'In uso' ? '#007bff' : '#dc3545') %>;
+                                                        border: 1px solid #ddd;">
+                                                </div>
+                                                <small class="text-muted">
+                                                    <%= veicolo.stato === 'Disponibile' ? '🟢' :
+                                                            (veicolo.stato === 'In uso' ? '🔵' : '🔴') %>
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <!-- Pulsanti IoT per gestori -->
+                                                <% if (user && user.ruolo === 'gestore') { %>
+                                                    <% if (veicolo.stato === 'Disponibile') { %>
+                                                        <form action="/iot/blocca-mezzo" method="POST" class="d-inline">
+                                                            <input type="hidden" name="mezzoId" value="<%= veicolo.id %>">
+                                                            <input type="hidden" name="redirectTo" value="stato-parcheggio">
+                                                            <button type="submit" class="btn btn-warning btn-sm" title="Blocca mezzo">
+                                                                🔒
+                                                            </button>
+                                                        </form>
+                                                    <% } else if (veicolo.stato === 'Non disponibile') { %>
+                                                        <form action="/iot/sblocca-mezzo" method="POST" class="d-inline">
+                                                            <input type="hidden" name="mezzoId" value="<%= veicolo.id %>">
+                                                            <input type="hidden" name="redirectTo" value="stato-parcheggio">
+                                                            <button type="submit" class="btn btn-success btn-sm" title="Sblocca mezzo">
+                                                                🔓
+                                                            </button>
+                                                        </form>
+                                                    <% } else { %>
+                                                        <span class="text-muted small">In uso</span>
+                                                    <% } %>
+                                                <% } %>
+                                                <form action="/elimina-mezzo" method="POST" class="d-inline">
+                                                    <input type="hidden" name="mezzo_id" value="<%= veicolo.id %>">
+                                                    <button type="submit" class="btn btn-danger btn-sm" title="Elimina mezzo">
+                                                        🗑️
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                                </tbody>
+                            </table>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% }) %>
+
+    <!-- Modal Aggiungi Mezzo -->
+    <div class="modal fade" id="modalAggiungiMezzo" tabindex="-1" aria-labelledby="modalAggiungiMezzoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAggiungiMezzoLabel">Aggiungi Mezzo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/aggiungi-mezzo" method="POST">
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo di mezzo</label>
+                            <select name="tipo" id="tipo" class="form-select" required>
+                                <option value="">Seleziona...</option>
+                                <option value="Bicicletta">Bicicletta</option>
+                                <option value="Bicicletta Elettrica">Bicicletta Elettrica</option>
+                                <option value="Monopattino Elettrico">Monopattino Elettrico</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="parcheggio" class="form-label">Parcheggio</label>
+                            <select name="id_parcheggio" id="parcheggio" class="form-select" required>
+                                <% parcheggi.forEach(p => { %>
+                                    <option value="<%= p.id %>"><%= p.nome %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success">Aggiungi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Aggiungi Parcheggio -->
+    <div class="modal fade" id="modalAggiungiParcheggio" tabindex="-1" aria-labelledby="modalAggiungiParcheggioLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAggiungiParcheggioLabel">Aggiungi Parcheggio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/aggiungi-parcheggio" method="POST">
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome Parcheggio</label>
+                            <input type="text" name="nome" id="nome" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="via" class="form-label">Via</label>
+                            <input type="text" name="via" id="via" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Crea Parcheggio</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modifica Parcheggio -->
+    <% parcheggi.forEach(parcheggio => { %>
+        <div class="modal fade" id="modalModificaParcheggio<%= parcheggio.id %>" tabindex="-1" aria-labelledby="modalModificaParcheggioLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalModificaParcheggioLabel">Modifica/Elimina Parcheggio</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                    </div>
+                    <div class="modal-body ">
+                        <form action="/modifica-parcheggio" method="POST">
+                            <input type="hidden" name="parcheggio_id" value="<%= parcheggio.id %>">
+                            <div class="mb-3">
+                                <label for="nome" class="form-label">Nome Parcheggio</label>
+                                <input type="text" name="nome" id="nome" class="form-control" value = "<%=parcheggio.nome%>" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="via" class="form-label">Via</label>
+                                <input type="text" name="via" id="via" class="form-control" value = "<%=parcheggio.via%>"required>
+                            </div>
+                            <div class="mb-3 modifybutton" >
+                                <button type="submit" class="btn btn-success">Modifica Parcheggio</button>
+                            </div>
+                        </form>
+                        <form action="/elimina-parcheggio" method="POST" class="mt-3 deletebutton">
+                            <input type="hidden" name="parcheggio_id" value="<%= parcheggio.id %>">
+                            <button type="submit" class="btn btn-danger deletebutton">Elimina Parcheggio</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% }) %>
+
+    <!-- Modal Sposta Mezzo -->
+    <div class="modal fade" id="modalSpostaMezzo" tabindex="-1" aria-labelledby="modalSpostaMezzoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-4">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalSpostaMezzoLabel">Sposta Mezzo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/sposta-mezzo" method="POST">
+                        <div class="row g-4">
+                            <!-- Selettore Parcheggio di partenza -->
+                            <div class="col-md-4 mb-4">
+                                <label for="parcheggio_partenza" class="form-label">Parcheggio di partenza</label>
+                                <select name="parcheggio_partenza" id="parcheggio_partenza" class="form-select" required>
+                                    <option value="">Seleziona...</option>
+                                    <% parcheggi.forEach(p => { %>
+                                        <option value="<%= p.id %>"><%= p.nome %> (<%= p.mezzi.filter(m => m.stato === 'Disponibile').length %> disponibili)</option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <!-- Selettore Mezzo -->
+                            <div class="col-md-4 mb-4">
+                                <label for="mezzo_id" class="form-label">Mezzo</label>
+                                <select name="mezzo_id" id="mezzo_id" class="form-select" required disabled>
+                                    <option value="">Seleziona un parcheggio</option>
+                                </select>
+                            </div>
+                            <!-- Selettore Parcheggio di destinazione -->
+                            <div class="col-md-4 mb-4">
+                                <label for="parcheggio_destinazione" class="form-label">Destinazione</label>
+                                <select name="parcheggio_destinazione" id="parcheggio_destinazione" class="form-select" required>
+                                    <option value="">Seleziona...</option>
+                                    <% parcheggi.forEach(p => { %>
+                                        <option value="<%= p.id %>"><%= p.nome %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success mt-2">Sposta</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div id="parcheggi-data" data-parcheggi='<%= JSON.stringify(parcheggi) %>' hidden></div>
+<script src="/js/stato-parcheggio.js"></script>
+<%- include('partials/footer') %>
+
+<script>
+	async function caricaSuggerimenti() {
+        const loadingEl = document.getElementById('ml-loading');
+        const errorEl = document.getElementById('ml-error');
+        const suggestionsEl = document.getElementById('ml-suggestions');
+
+        loadingEl.style.display = 'block';
+        errorEl.style.display = 'none';
+        suggestionsEl.innerHTML = '';
+
+        try {
+            const response = await fetch('/api/predizioni/distribuzione-ottimale');
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Errore nel caricamento dei suggerimenti');
+            }
+
+            loadingEl.style.display = 'none';
+
+            if (data.cache_missing || data.total_suggestions === 0) {
+                suggestionsEl.innerHTML = `
+                    <div class="alert alert-info text-center">
+                        <h5>Nessun dato di ottimizzazione disponibile</h5>
+                        <p>Per visualizzare i suggerimenti devi addestrare il modello con gli ultimi dati.</p>
+                    </div>
+                `;
+                // Riabilita il pulsante se non ci sono dati
+                document.querySelector('button[onclick="addestraModello()"]').disabled = false;
+                return;
+            }
+
+            mostraSuggerimenti(data);
+
+        } catch (error) {
+            loadingEl.style.display = 'none';
+            errorEl.style.display = 'block';
+            document.getElementById('ml-error-text').textContent = error.message;
+            console.error('Errore caricamento suggerimenti:', error);
+        }
+    }
+
+	async function addestraModello() {
+        const button = event.target;
+        const originalText = button.innerHTML;
+        const loadingEl = document.getElementById('ml-loading');
+        const suggestionsEl = document.getElementById('ml-suggestions');
+        const errorEl = document.getElementById('ml-error');
+
+        try {
+            button.innerHTML = 'Addestramento in corso...';
+            button.disabled = true;
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            suggestionsEl.innerHTML = '';
+
+            const response = await fetch('/api/predizioni/addestra-modello', {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Errore nell\'addestramento');
+            }
+
+            const data = await response.json();
+            setTimeout(() => {
+                caricaSuggerimenti();
+            }, 2000);
+
+        } catch (error) {
+            console.error('Errore addestramento:', error);
+            loadingEl.style.display = 'none';
+            errorEl.style.display = 'block';
+            document.getElementById('ml-error-text').textContent =
+                'Errore nell\'addestramento del modello: ' + error.message;
+        } finally {
+            // Lo stato del pulsante verrà gestito da `mostraSuggerimenti` dopo il caricamento
+        }
+    }
+
+	function mostraSuggerimenti(data) {
+		const suggestionsEl = document.getElementById('ml-suggestions');
+		const suggestions = data.suggestions || [];
+        const updateButton = document.querySelector('button[onclick="addestraModello()"]');
+
+		let cacheInfo = '';
+		let suggestionsHtml = '';
+
+		if (suggestions.length === 0 && !data.cache_missing) {
+			suggestionsHtml = `
+                <div class="alert alert-success text-center">
+                    <h5>Distribuzione Ottimale</h5>
+                    <p>I dati attuali mostrano una distribuzione già bilanciata dei mezzi nei parcheggi.</p>
+                </div>
+            `;
+		} else {
+			const fasceOrarie = [
+				{ nome: 'Notte', inizio: 21, fine: 5 },
+				{ nome: 'Mattina', inizio: 5, fine: 12 },
+				{ nome: 'Pomeriggio', inizio: 12, fine: 18 },
+				{ nome: 'Sera', inizio: 18, fine: 21 }
+			];
+			const suggestionsByFascia = fasceOrarie.map(fascia => {
+				const items = suggestions.filter(s => {
+					const hour = new Date(s.timestamp).getHours();
+					if (fascia.nome === 'Notte') return (hour >= fascia.inizio || hour < fascia.fine);
+					return hour >= fascia.inizio && hour < fascia.fine;
+				});
+
+				const grouped = {};
+                items.forEach(s => {
+                    const key = `${s.parking_name}-${s.mezzo_tipo}`;
+                    if (!grouped[key]) {
+                        grouped[key] = { parking_name: s.parking_name, mezzo_tipo: s.mezzo_tipo, suggestions: [] };
+                    }
+                    grouped[key].suggestions.push(s);
+                });
+
+				return {
+					nome: fascia.nome,
+					items: Object.values(grouped).map(group => {
+                        const latest = group.suggestions[group.suggestions.length - 1];
+						const recommended_capacity = Math.max(...group.suggestions.map(a => a.recommended_capacity));
+						const vehicles_diff = recommended_capacity - latest.current_vehicles;
+						const action = vehicles_diff > 0 ? 'ADD' : (vehicles_diff < 0 ? 'REMOVE' : 'OK');
+						const action_text = vehicles_diff === 0 ? 'Distribuzione ottimale' : `${action === 'ADD' ? 'Aumentare' : 'Ridurre'} a ${recommended_capacity} mezzi (${vehicles_diff > 0 ? '+' : ''}${vehicles_diff})`;
+						
+                        return { 
+                            parking_name: group.parking_name,
+                            mezzo_tipo: group.mezzo_tipo,
+                            current_vehicles: latest.current_vehicles, 
+                            recommended_capacity, 
+                            vehicles_diff, 
+                            action, 
+                            action_text 
+                        };
+					})
+				};
+			});
+
+			suggestionsByFascia.forEach(fascia => {
+				if (!fascia.items.length) return;
+				suggestionsHtml += `
+                    <h5 class="mt-4">${fascia.nome}</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Parcheggio</th>
+                                    <th>Tipo Mezzo</th>
+                                    <th>Veicoli attuali</th>
+                                    <th>Capacità raccomandata</th>
+                                    <th>Variazione</th>
+                                    <th>Azione suggerita</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${fascia.items.map(s => `
+                                    <tr>
+                                        <td><strong>${s.parking_name}</strong></td>
+                                        <td><em>${s.mezzo_tipo}</em></td>
+                                        <td>${s.current_vehicles}</td>
+                                        <td>${s.recommended_capacity}</td>
+                                        <td class="fw-bold ${s.action === 'ADD' ? 'text-success' : (s.action === 'REMOVE' ? 'text-danger' : '')}">
+                                            ${s.vehicles_diff > 0 ? '+' : ''}${s.vehicles_diff}
+                                        </td>
+                                        <td>
+                                            <span class="badge btn text-dark ${s.action === 'ADD' ? 'btn-success' : (s.action === 'REMOVE' ? 'bg-warning' : 'bg-secondary')}">
+                                                ${s.action_text}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+			});
+		}
+
+		let plotHtml = '';
+		if (data.plots) {
+			plotHtml = `
+                <div class="row text-center mb-4">
+                    <div class="col-md-4 mb-3">
+                        <img src="${data.plots.line}" alt="Line Plot" class="img-fluid rounded shadow plot-image">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <img src="${data.plots.bar}" alt="Bar Plot" class="img-fluid rounded shadow plot-image">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <img src="${data.plots.heatmap}" alt="Heatmap Plot" class="img-fluid rounded shadow plot-image">
+                    </div>
+                </div>
+            `;
+		}
+
+        if (data.generated_at) {
+            const generatedDate = new Date(data.generated_at.seconds ? data.generated_at.seconds * 1000 : data.generated_at);
+            const now = new Date();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            const timeDifference = now.getTime() - generatedDate.getTime();
+            const nextAvailableDate = new Date(generatedDate.getTime() + twentyFourHours);
+
+            if (timeDifference < twentyFourHours) {
+                updateButton.disabled = true;
+                updateButton.title = `Prossimo addestramento disponibile il ${nextAvailableDate.toLocaleString('it-IT')}`;
+                const hoursRemaining = Math.ceil((twentyFourHours - timeDifference) / (1000 * 60 * 60));
+                cacheInfo = `
+                    <div class="alert alert-light text-center mb-4">
+                        <small class="text-muted">
+                            Suggerimenti generati il ${generatedDate.toLocaleString('it-IT')}.
+                            Prossimo aggiornamento disponibile tra circa ${hoursRemaining} ore.
+                        </small>
+                    </div>
+                `;
+            } else {
+                updateButton.disabled = false;
+                updateButton.title = 'Addestra il modello con i dati più recenti';
+                cacheInfo = `
+                    <div class="alert alert-warning text-center mb-4">
+                        <small class="text-muted">
+                            I suggerimenti sono stati generati più di 24 ore fa (${generatedDate.toLocaleString('it-IT')}). Si consiglia di aggiornare il modello.
+                        </small>
+                    </div>
+                `;
+            }
+        } else {
+            updateButton.disabled = false;
+        }
+
+		suggestionsEl.innerHTML = plotHtml + suggestionsHtml + cacheInfo;
+	}
+
+	document.addEventListener('DOMContentLoaded', function() {
+		caricaSuggerimenti();
+	});
+</script>

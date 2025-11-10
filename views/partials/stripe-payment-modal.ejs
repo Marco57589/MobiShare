@@ -1,0 +1,47 @@
+<style>
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+</style>
+
+<div class="modal fade" id="stripePaymentModal" tabindex="-1" aria-labelledby="stripePaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="stripePaymentModalLabel">Ricarica Credito</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+            </div>
+            <div class="modal-body">
+                <div id="paymentInfoAlert" class="alert alert-info d-none">
+                </div>
+
+                <div class="mb-3">
+                    <label for="stripeAmountInput" class="form-label fw-bold">Importo da ricaricare:</label>
+                    <div class="input-group">
+                        <span class="input-group-text">€</span>
+                        <input type="number" class="form-control ricarica-input" id="stripeAmountInput"
+                               min="0.01" max="100" step="0.01" value="5.00" required>
+                    </div>
+                    <div class="form-text" id="amountHelpText">
+                        Importo minimo: € 0.01 | Massimo: € 100
+                    </div>
+                </div>
+
+                <!-- Form di pagamento Stripe -->
+                <form id="stripePaymentForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Dati della carta</label>
+                        <div id="stripeCardElement" class="stripe-element"></div>
+                        <div id="stripeCardErrors" class="text-danger mt-2 small"></div>
+                    </div>
+
+                    <button type="submit" id="stripeSubmitButton" class="btn btn-success w-100 py-2">
+                        <span id="stripeButtonText">Paga € <span id="stripeAmountDisplay">5.00</span></span>
+                        <span id="stripeSpinner" class="spinner-border spinner-border-sm ms-2 d-none"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

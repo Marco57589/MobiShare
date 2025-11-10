@@ -1,0 +1,257 @@
+<!-- Modal di Sicurezza Stripe -->
+<div class="modal fade" id="stripeSecurityModal" tabindex="-1" aria-labelledby="stripeSecurityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header btn btn-sm py-2 color-nav">
+                <h5 class="modal-title fs-6" id="stripeSecurityModalLabel">Verifica di Sicurezza</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="material-icons me-2">security</i>
+                    Conferma la tua identità per procedere con il pagamento di <strong id="securityAmountDisplay">€ 0.00</strong>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="mb-3">Seleziona metodo di verifica:</h6>
+
+                    <% if (user && user.faceRegistered) { %>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="verificationMethod" id="faceVerify" value="face" checked>
+                            <label class="form-check-label" for="faceVerify">
+                                <i class="material-icons me-2">face</i>
+                                Riconoscimento Facciale
+                            </label>
+                        </div>
+                    <% } %>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="verificationMethod" id="passwordVerify"
+                               value="password" <%= !user || !user.faceRegistered ? 'checked' : '' %>>
+                        <label class="form-check-label" for="passwordVerify">
+                            <i class="material-icons me-2">lock</i>
+                            Password
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Sezione Password -->
+                <div id="passwordSection" class="verification-section <%= !user || !user.faceRegistered ? '' : 'd-none' %>">
+                    <div class="mb-3">
+                        <label for="securityPassword" class="form-label">Inserisci la tua password</label>
+                        <input type="password" class="form-control" id="securityPassword" placeholder="Password">
+                    </div>
+                    <button type="button" class="btn btn-success w-100" id="verifyPasswordBtn">
+                        Verifica Password
+                    </button>
+                </div>
+
+                <!-- Sezione Riconoscimento Facciale -->
+                <div id="faceSection" class="verification-section <%= !user || !user.faceRegistered ? 'd-none' : '' %>">
+                    <div class="text-center mb-3">
+                        <video id="securityVideo" width="400" height="300" autoplay class="d-none rounded"></video>
+                        <canvas id="securityCanvas" width="400" height="300" class="d-none"></canvas>
+                        <div id="faceInstructions">
+                            <p>Clicca "Avvia Riconoscimento" per verificare la tua identità.</p>
+                            <p class="small text-muted">Assicurati di essere in una zona ben illuminata.</p>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button id="startFaceVerification" class="btn btn-success">Avvia Riconoscimento</button>
+                        <button id="captureFace" class="btn btn-success d-none">Verifica Volto</button>
+                        <button id="retryFace" class="btn btn-warning d-none">Riprova</button>
+                    </div>
+                </div>
+
+                <!-- Risultato Verifica -->
+                <div id="verificationResult" class="alert d-none mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button>
+                <button type="button" class="btn btn-success d-none" id="proceedPaymentBtn" disabled>
+                    Procedi con il Pagamento
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const securityFaceRecognition = new FaceRecognition('securityVideo', 'securityCanvas', 'faceInstructions');
+		let securityVerificationSuccess = false;
+
+		document.querySelectorAll('input[name="verificationMethod"]').forEach(radio => {
+			radio.addEventListener('change', function() {
+				const method = this.value;
+				document.getElementById('passwordSection').classList.toggle('d-none', method !== 'password');
+				document.getElementById('faceSection').classList.toggle('d-none', method !== 'face');
+				resetSecurityVerification();
+			});
+		});
+
+		document.getElementById('startFaceVerification').addEventListener('click', async function() {
+			try {
+				await securityFaceRecognition.startCamera();
+				document.getElementById('startFaceVerification').classList.add('d-none');
+				document.getElementById('captureFace').classList.remove('d-none');
+				document.getElementById('retryFace').classList.add('d-none');
+				document.getElementById('verificationResult').classList.add('d-none');
+				securityVerificationSuccess = false;
+			} catch (error) {
+				console.error('Errore accesso camera:', error);
+				showSecurityVerificationResult(error.message, 'danger');
+			}
+		});
+
+		document.getElementById('captureFace').addEventListener('click', async function() {
+			const button = this;
+			button.disabled = true;
+			button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Verifica...';
+
+			try {
+				const result = await securityFaceRecognition.verifyFace();
+
+				if (result.success && result.verified) {
+					securityVerificationSuccess = true;
+					showSecurityVerificationResult('Volto riconosciuto con successo!', 'success');
+					document.getElementById('captureFace').classList.add('d-none');
+					document.getElementById('retryFace').classList.add('d-none');
+
+					triggerStripePaymentAfterVerification();
+				} else {
+					showSecurityVerificationResult('Volto non riconosciuto. Riprova.', 'danger');
+					showSecurityRetryButton();
+				}
+			} catch (error) {
+				console.error('Errore verifica facciale:', error);
+				showSecurityVerificationResult(error.message, 'danger');
+				showSecurityRetryButton();
+			} finally {
+				button.disabled = false;
+				button.textContent = 'Verifica Volto';
+			}
+		});
+
+		document.getElementById('retryFace').addEventListener('click', function() {
+			securityFaceRecognition.retryCapture();
+			document.getElementById('captureFace').classList.remove('d-none');
+			document.getElementById('retryFace').classList.add('d-none');
+			securityVerificationSuccess = false;
+			document.getElementById('verificationResult').classList.add('d-none');
+		});
+
+		document.getElementById('verifyPasswordBtn').addEventListener('click', async function() {
+			const password = document.getElementById('securityPassword').value;
+			const verifyBtn = this;
+
+			if (!password) {
+				showSecurityVerificationResult('Inserisci la password', 'danger');
+				return;
+			}
+
+			verifyBtn.disabled = true;
+			verifyBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Verifica in corso...';
+
+			try {
+				const response = await fetch('/api/verify-password', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						password: password
+					}),
+				});
+
+				const result = await response.json();
+
+				if (result.success) {
+					showSecurityVerificationResult('Password verificata con successo!', 'success');
+
+					triggerStripePaymentAfterVerification();
+				} else {
+					showSecurityVerificationResult(result.error || 'Password non valida', 'danger');
+				}
+			} catch (error) {
+				showSecurityVerificationResult('Errore durante la verifica', 'danger');
+			} finally {
+				verifyBtn.disabled = false;
+				verifyBtn.textContent = 'Verifica Password';
+			}
+		});
+
+		document.getElementById('proceedPaymentBtn').addEventListener('click', function() {
+			if (!securityVerificationSuccess) {
+				showSecurityVerificationResult('Devi prima verificare la tua identità', 'warning');
+				return;
+			}
+
+			triggerStripePaymentAfterVerification();
+		});
+
+		document.getElementById('stripeSecurityModal').addEventListener('hidden.bs.modal', function() {
+			securityFaceRecognition.reset();
+			resetSecurityVerification();
+		});
+
+		function triggerStripePaymentAfterVerification() {
+			const securityModal = bootstrap.Modal.getInstance(document.getElementById('stripeSecurityModal'));
+			securityModal.hide();
+
+			if (window.stripePaymentManager) {
+				window.stripePaymentManager.paymentVerified = true;
+
+				setTimeout(() => {
+					window.stripePaymentManager.executePaymentAfterVerification();
+				}, 500);
+			} else {
+				console.error('StripePaymentManager non trovato');
+				alert('Errore: sistema di pagamento non disponibile');
+			}
+
+			resetSecurityVerificationComplete();
+		}
+
+		function showSecurityVerificationResult(message, type) {
+			const resultDiv = document.getElementById('verificationResult');
+			resultDiv.className = `alert alert-${type} mt-3`;
+			resultDiv.textContent = message;
+			resultDiv.classList.remove('d-none');
+		}
+
+		function enableSecurityPaymentProceed() {
+			securityVerificationSuccess = true;
+			const proceedBtn = document.getElementById('proceedPaymentBtn');
+			proceedBtn.classList.remove('d-none');
+			proceedBtn.disabled = false;
+		}
+
+		function showSecurityRetryButton() {
+			document.getElementById('captureFace').classList.add('d-none');
+			document.getElementById('retryFace').classList.remove('d-none');
+		}
+
+		function resetSecurityVerification() {
+			securityVerificationSuccess = false;
+			const proceedBtn = document.getElementById('proceedPaymentBtn');
+			if (proceedBtn) {
+				proceedBtn.classList.add('d-none');
+				proceedBtn.disabled = true;
+			}
+			document.getElementById('verificationResult').classList.add('d-none');
+			document.getElementById('securityPassword').value = '';
+		}
+
+		function resetSecurityVerificationComplete() {
+			securityFaceRecognition.reset();
+			securityVerificationSuccess = false;
+			document.getElementById('startFaceVerification').classList.remove('d-none');
+			document.getElementById('captureFace').classList.add('d-none');
+			document.getElementById('retryFace').classList.add('d-none');
+			document.getElementById('faceInstructions').classList.remove('d-none');
+			document.getElementById('verificationResult').classList.add('d-none');
+			document.getElementById('securityPassword').value = '';
+		}
+	});
+</script>

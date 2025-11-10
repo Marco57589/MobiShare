@@ -1,0 +1,83 @@
+main {
+    flex: 1;
+}
+
+.profile-title {
+    font-family: 'Itim', cursive;
+    font-size: 2.5rem;
+    color: #2f4538;
+}
+
+.profile-container {
+    max-width: 700px;
+}
+
+.profile-card {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 1.5rem;
+}
+
+.label {
+    font-weight: bold;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+}
+
+.value {
+    font-family: 'Inter', sans-serif;
+    color: #555;
+}
+
+.material-icons {
+    color: #6da97b;
+    font-size: 1.5rem;
+}
+
+.color-nav {
+
+    background-color: #DAE6C4 !important;
+}
+
+.modal-aligned {
+
+    margin-top: 250px;
+}
+
+.modal-aligned2 {
+
+    margin-top: 100px;
+}
+#passwordVerificationModal .modal-content {
+    border-radius: 10px;
+}
+
+#passwordVerificationModal .btn-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-right-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

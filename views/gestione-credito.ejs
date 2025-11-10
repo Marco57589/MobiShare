@@ -1,0 +1,133 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<!-- Fonts & CSS -->
+<link rel="stylesheet" href="/css/gestione-credito.css">
+<link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet">
+
+<script src="https://js.stripe.com/v3/"></script>
+<script src="/js/stripe-payments.js"></script>
+<script src="/js/face-recognition.js"></script>
+
+<div class="container recharge-page my-5">
+    <h1 class="page-title text-center mb-4">Gestione Credito</h1>
+
+    <%- include('partials/error-box') %>
+
+    <div class="row mb-4 g-4 align-items-stretch">
+        <!-- Credito attuale -->
+        <div class="col-md-6">
+            <div class="card shadow rounded-4 p-4 text-center h-100 card-credit">
+                <h2 class="section-title">Credito attuale</h2>
+                <p class="credito-amount display-5">€ <%= user.saldo.toFixed(2) %></p>
+            </div>
+        </div>
+
+        <!-- Ricarica -->
+        <div class="col-md-6">
+            <div class="card shadow rounded-4 p-4 h-100">
+                <h2 class="section-title">Ricarica credito</h2>
+
+                <form id="rechargeForm" class="recharge-form">
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Importo (€)</label>
+                        <input type="number" name="valoredacaricare" id="amount" min="1" step="0.01" class="form-control" required value="5">
+                    </div>
+                    <button type="button" class="btn btn-success w-100" id="submitRecharge">
+                        Procedi al pagamento
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow rounded-4 p-4">
+        <h2 class="section-title mb-3">Storico ricariche</h2>
+        <% if (ricariche && ricariche.length > 0) { %>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Data</th>
+                        <th>Importo (€)</th>
+                        <th>Metodo</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <% ricariche.forEach(r => { %>
+                        <tr>
+                            <td><%= r.data %></td>
+                            <td>€ <%= r.importo.toFixed(2) %></td>
+                            <td><%= r.metodo %></td>
+                        </tr>
+                    <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <p class="text-muted">Nessuna ricarica effettuata.</p>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/stripe-payment-modal') %>
+<%- include('partials/stripe-security-modal') %>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const stripeManager = initializeStripePayment('<%= stripePublishableKey %>');
+		let currentAmount = 0;
+
+		document.getElementById('stripePaymentModal').addEventListener('show.bs.modal', function() {
+			stripeManager.initializePayment(
+				currentAmount,
+				currentAmount,
+				currentAmount,
+				'Conferma la ricarica del tuo credito di € ' + currentAmount.toFixed(2)
+			);
+		});
+
+		document.getElementById('submitRecharge').addEventListener('click', function() {
+			const amountInput = document.getElementById('amount');
+			const amount = parseFloat(amountInput.value);
+
+			if (!amount || amount <= 0) {
+				alert('Inserisci un importo valido');
+				amountInput.focus();
+				return;
+			}
+
+			if (amount > 1000) {
+				alert('L\'importo massimo per una ricarica è di €1000');
+				amountInput.focus();
+				return;
+			}
+
+			currentAmount = amount;
+			const paymentModal = new bootstrap.Modal(document.getElementById('stripePaymentModal'));
+			paymentModal.show();
+		});
+
+		document.getElementById('stripePaymentModal').addEventListener('hidden.bs.modal', function() {
+			const urlParams = new URLSearchParams(window.location.search);
+			if (urlParams.has('success')) {
+				window.location.href = '/gestione-credito?success=' + encodeURIComponent(urlParams.get('success'));
+			}
+		});
+
+		document.getElementById('rechargeForm').addEventListener('submit', function(e) {
+			e.preventDefault();
+			document.getElementById('submitRecharge').click();
+		});
+
+		document.getElementById('amount').addEventListener('input', function() {
+			const amount = parseFloat(this.value);
+			if (amount && amount > 0 && amount <= 1000) {
+				currentAmount = amount;
+			}
+		});
+	});
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,53 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<!-- Fonts & CSS -->
+<link rel="stylesheet" href="/css/gestione-utenti-sospesi.css">
+<link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet">
+
+<main class="container mt-5 mb-5 flex-grow-1">
+    <h1 class="page-title text-center mb-4">Utenti Sospesi</h1>
+
+    <div class="card shadow rounded-4 p-4">
+        <table class="table table-hover table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nome Utente</th>
+                    <th>Motivo Sospensione</th>
+                    <th>Numero Sospensioni</th>
+                    <th>Credito</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                <%if(utenti.length>0) {%>  
+                    <% utenti.forEach(u => { %>
+                        <tr>
+                            <td><%= u.nome %></td>
+                            <td>Credito insufficiente</td>
+                            <td><%= u.numeroSospensioni %></td>
+                            <td><%= u.saldo %> €</td>
+                            <td>
+                                <%if (u.saldo>=0) {%>  
+                                <form action="/sblocca-utente" method="POST" class="d-inline">
+                                    <input type="hidden" name="email" id="email" value="<%= u.email %>">
+                                    <button type="submit" class="btn btn-success btn-sm">Sblocca</button>
+                                </form>
+                                <% } else {%>
+                                    <button type="submit" class="btn btn-success btn-sm" disabled>Sblocca</button>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <%}else { %>
+                    <tr>
+                        <td colspan="5" class="text-center">Nessun utente sospeso trovato.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<%- include('partials/footer') %>

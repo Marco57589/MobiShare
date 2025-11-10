@@ -1,0 +1,209 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+<link rel="stylesheet" href="/css/index.css">
+<script src="https://js.stripe.com/v3/"></script>
+<script src="/js/stripe-payments.js"></script>
+<script src="/js/face-recognition.js"></script>
+
+<div class="container-home">
+    <div class="container">
+        <% if (user.ruolo === 'utente' ) { %>
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="testo">Benvenuto su Mobishare</h1>
+                    <div id="home-cta" class="mt-4">
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                </div>
+            </div>
+            <div class="row">
+                <div class="card col-md-10 offset-md-1 custom-card-utente">
+                    <div class="card-body p-0">
+                        <div class="row g-0 row-credito">
+                            <div class="col-md-6 p-4 bordo">
+                                <div class="credito-box">
+                                    <i class="fs-1 text-primary mb-3"></i>
+                                    <h3 class="box">Credito attuale: <%= user.saldo %>€</h3>
+                                    <% if(user.stato_profilo === "sospeso"){ %>
+                                        <% if(user.saldo < 0){ %>
+                                            <button class="btn btn-success button-utente"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#stripePaymentModal">Ricarica
+                                            </button>
+                                        <% }else{ %>
+                                            <button class="btn btn-secondary button-utente" disabled>
+                                                Credito sufficiente
+                                            </button>
+                                        <% } %>
+                                    <% }else{ %>
+                                        <form action="/gestione-credito" method="GET">
+                                            <button class="btn btn-success button-utente"
+                                                    type="submit">Ricarica
+                                            </button>
+                                        </form>
+                                    <% } %>
+                                </div>
+                                <% if(user.stato_profilo === "attivo"){ %>
+                                    <div class="corsa-box">
+                                        <h3 class="box">Vuoi avviare una corsa?</h3>
+                                        <a href="/avvia-corsa" class="btn btn-success button-utente">Avvia
+                                            Corsa</a>
+                                    </div>
+                                <% }else{ %>
+                                    <div class="corsa-box">
+                                        <h3 class="box">Vuoi avviare una corsa?</h3>
+                                        <button class="btn btn-success button-utente"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalStatoNonAttivo">Avvia Corsa</button>
+                                    </div>
+                                <% } %>
+
+                                <!-- MODAL USER SOSPESO -->
+                                <div class="modal fade" id="modalStatoNonAttivo" tabindex="-1"
+                                     aria-labelledby="modalStatoNonAttivoLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="modalStatoNonAttivoLabel">Attenzione</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                                            </div>
+                                            <% if(user.stato_profilo === "sospeso"){ %>
+                                                <div class="modal-body">
+                                                    <% if(user.saldo < 0){ %>
+                                                        <div class="alert alert-warning">
+                                                            <strong>Account sospeso per credito insufficiente!</strong><br>
+                                                            Il tuo profilo non è attivo. Non puoi avviare una corsa.<br>
+                                                            Per poter avviare una corsa, ricarica il tuo credito con un importo di almeno 30 minuti di utilizzo.
+                                                        </div>
+                                                        <label for="tipoMezzo" class="form-label mt-2">Seleziona il tipo di mezzo:</label>
+                                                        <select id="tipoMezzo" class="form-select">
+                                                            <option value="" selected disabled>-- Scegli mezzo --</option>
+                                                            <% tariffe.forEach(function(t) { %>
+                                                                <option value="<%= t.mezzo %>"><%= t.mezzo %></option>
+                                                            <% }); %>
+                                                        </select>
+                                                        <div id="tariffe-mezzi" data-parcheggi='<%= JSON.stringify(tariffe) %>' hidden></div>
+                                                        <div id="totale-ricarica" class="mt-2"></div>
+                                                    <% }else{ %>
+                                                        <div class="alert alert-info">
+                                                            <strong>Account in attesa di riattivazione</strong><br>
+                                                            Il tuo account è stato sospeso per motivi amministrativi.<br>
+                                                            Attendi la riattivazione da parte dei gestori del sistema.
+                                                        </div>
+                                                        <div class="text-center mt-3">
+                                                            <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                                                            <p class="text-muted">Il nostro team sta verificando la tua situazione.<br>Riceverai una notifica quando l'account sarà riattivato.</p>
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <% if(user.saldo < 0){ %>
+                                                        <button type="button" id="btnRicarica" class="btn btn-secondary"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#stripePaymentModal"
+                                                                data-bs-dismiss="modal">
+                                                            Ricarica
+                                                        </button>
+                                                    <% } %>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                                                </div>
+                                            <% }else{ %>
+                                                <div class="modal-body">
+                                                    Il tuo profilo al momento non è attivo. Aspettare che il gestore riattivi il suo account per poter avviare una corsa.
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 p-4 div-map">
+                                <div id="map-container" class="map-container">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="card col-md-10 offset-md-1 custom-card-2">
+                    <div class="card-body card-body-utente p-0">
+                        <div class="row row-2 g-0">
+                            <div class="col-md-6 p-4 bordo d-flex align-items-center justify-content-between">
+                                <h3 class="mb-0">Punti fedeltà:</h3>
+                                <div class="value"><%= user.puntiFedelta || 0 %></div>
+                            </div>
+                            <div class="col-md-6 p-4 d-flex align-items-center justify-content-between">
+                                <h3 class="mb-0">Status:</h3>
+                                <div class="value"><%= user.stato_profilo || 'N/A' %></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% } else if (user.ruolo === 'gestore' ) { %>
+            <h1 class="page-title text-center mb-5">Dashboard Gestore</h1>
+            <div class="dashboard-gestore d-flex flex-wrap justify-content-center gap-4">
+                <div class="dashboard-card">
+                    <h5 class="categoria">In manutenzione</h5>
+                    <p class="quantita"><%= numeroMezziInManutenzione %></p>
+                </div>
+                <div class="dashboard-card">
+                    <h5 class="categoria">In ricarica</h5>
+                    <p class="quantita"><%= numeroMezziBatteriaScarica %></p>
+                </div>
+                <div class="dashboard-card">
+                    <h5 class="categoria">Utenti sospesi</h5>
+                    <p class="quantita">
+                        <%= numeroUtentiSospesi %>
+                    </p>
+                </div>
+            </div>
+            <div class="mt-5 div-cards">
+                <a href="/gestione-utenti-sospesi" class="link-box">
+                    <div class="card card-box">
+                        <i class="fs-1 text-primary"></i>
+                        <h3>Gestione utenti sospesi</h3>
+                    </div>
+                </a>
+                <a href="/stato-parcheggio" class="link-box">
+                    <div class="card card-box">
+                        <i class="fs-1 text-primary"></i>
+                        <h3>Gestione parcheggi</h3>
+                    </div>
+                </a>
+                <a href="/compiti-tecnici" class="link-box">
+                    <div class="card card-box">
+                        <i class="fs-1 text-primary"></i>
+                        <h3>Compiti tecnici</h3>
+                    </div>
+                </a>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<div id="parcheggi-data" data-parcheggi='<%= JSON.stringify(parcheggi) %>' hidden></div>
+
+<%- include('partials/stripe-payment-modal') %>
+<%- include('partials/stripe-security-modal') %>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const stripeManager = initializeStripePayment('<%= stripePublishableKey %>');
+
+		document.getElementById('stripePaymentModal').addEventListener('show.bs.modal', function() {
+			const minAmount = <%= Math.abs(user.saldo).toFixed(2) %>;
+			stripeManager.initializePayment(
+				minAmount,
+				100,
+				minAmount,
+				'Per sbloccare il tuo account, ricarica almeno € ' + minAmount
+			);
+		});
+	});
+</script>
+
+<script src="/js/mappa.js"></script>
+<script src="/js/index.js"></script>
+<%- include('partials/footer') %>

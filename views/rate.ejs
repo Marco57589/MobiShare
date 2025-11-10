@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+<link rel="stylesheet" href="/css/rate.css">
+
+<body>
+    <div class ="container text-center my-5">
+        <h1 class="page-title mb-4">Tariffe</h1>
+        <div class="div-rates container-rates g-4 mt-5">
+            <div class ="rates">
+                <div class="rate-title">Tabella dei prezzi</div>
+                <div class="rate-body">
+                    <ul class="rate-list">
+                        <li class="rate-item">Prima mezz'ora</li>
+                        <li class="rate-item">Dopo mezzora costo/minuto</li>
+                        <li class="rate-item">Costo fisso di noleggio</li>
+                    </ul>
+                </div>
+            </div>
+            <% tariffe.forEach(function(t) { %>
+                <div class ="rates">
+                    <div class="rate-title"><%= t.mezzo %></div>
+                    <div class="rate-body">
+                        <ul class="rate-list">
+                            <li class="rate-item"><%= t.mezzora %> €</li>
+                            <li class="rate-item"><%= t.costoMinuto %> €/minuto</li>
+                            <li class="rate-item"><%= t.costoFisso %> €</li>
+                        </ul>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+<%- include('partials/footer') %>

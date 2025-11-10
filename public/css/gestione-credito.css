@@ -1,0 +1,104 @@
+.container {
+    flex: 1;
+}
+
+.page-title {
+    font-family: 'Itim', cursive;
+    font-size: 2.5rem;
+    color: #2f4538;
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.section-title {
+    font-family: 'Itim', cursive;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.card,
+.card-credit {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 1.3em;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.card-credit {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.recharge-form .form-label {
+    font-weight: 600;
+    color: #333;
+    font-family: 'Inter', sans-serif;
+}
+
+.recharge-form input {
+    border-radius: 10px;
+    padding: 0.6rem;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.btn-success {
+    background-color: #6da97b;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    padding: 0.6rem 1.2rem;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #5a8f6a;
+}
+
+.credito-amount {
+    font-family: 'Inter', sans-serif;
+    color: #198754;
+    font-weight: 600;
+    font-size: 2.5rem;
+    margin-top: 1rem;
+}
+
+.table {
+    font-family: 'Inter', sans-serif;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.StripeElement {
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.StripeElement--focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.StripeElement--invalid {
+    border-color: #fa755a;
+}
+
+.StripeElement--webkit-autofill {
+    background-color: #fefde5 !important;
+}
+
+@media (max-width: 768px) {
+    .credito-amount {
+        font-size: 1.6rem;
+    }
+
+    .card, .card-credit {
+        padding: 1.2rem;
+    }
+}

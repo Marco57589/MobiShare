@@ -1,0 +1,32 @@
+.container {
+    flex: 1;
+}
+
+.prodotti-title {
+    font-family: 'Itim', cursive;
+    color: #000;
+    font-size: 2.5rem;
+    margin-top: 1.5rem;
+}
+
+.card {
+    border: none;
+    background-color: #fff;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: scale(1.03);
+}
+
+.card-img-top {
+    max-height: 350px;
+    object-fit: contain;
+    border-radius: 0.5rem;
+}
+
+.prodotto-descrizione {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: #333;
+}

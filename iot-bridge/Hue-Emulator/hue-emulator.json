@@ -1,0 +1,207 @@
+{
+  "lights": {
+    "1": {
+      "state": {
+        "on": true,
+        "bri": 254,
+        "hue": 5444,
+        "sat": 254,
+        "xy": [
+          0,
+          0
+        ],
+        "ct": 0,
+        "alert": "none",
+        "effect": "none",
+        "colormode": "hs",
+        "reachable": true
+      },
+      "type": "Extended color light",
+      "name": "Vehicle 1",
+      "modelid": "LCT001",
+      "swversion": "65003148",
+      "uniqueid": "00:17:88:01:00:d4:12:9",
+      "pointsymbol": {
+        "1": "none",
+        "2": "none",
+        "3": "none",
+        "4": "none",
+        "5": "none",
+        "6": "none",
+        "7": "none",
+        "8": "none"
+      }
+    },
+    "2": {
+      "state": {
+        "on": true,
+        "bri": 254,
+        "hue": 6444,
+        "sat": 254,
+        "xy": [
+          0,
+          0
+        ],
+        "ct": 0,
+        "alert": "none",
+        "effect": "none",
+        "colormode": "hs",
+        "reachable": true
+      },
+      "type": "Extended color light",
+      "name": "Vehicle 2",
+      "modelid": "LCT001",
+      "swversion": "65003148",
+      "uniqueid": "00:17:88:01:00:d4:12:10",
+      "pointsymbol": {
+        "1": "none",
+        "2": "none",
+        "3": "none",
+        "4": "none",
+        "5": "none",
+        "6": "none",
+        "7": "none",
+        "8": "none"
+      }
+    },
+    "5": {
+      "state": {
+        "on": true,
+        "bri": 254,
+        "hue": 9444,
+        "sat": 254,
+        "xy": [
+          0,
+          0
+        ],
+        "ct": 0,
+        "alert": "none",
+        "effect": "none",
+        "colormode": "hs",
+        "reachable": true
+      },
+      "type": "Extended color light",
+      "name": "Vehicle 5",
+      "modelid": "LCT001",
+      "swversion": "65003148",
+      "uniqueid": "00:17:88:01:00:d4:12:13",
+      "pointsymbol": {
+        "1": "none",
+        "2": "none",
+        "3": "none",
+        "4": "none",
+        "5": "none",
+        "6": "none",
+        "7": "none",
+        "8": "none"
+      }
+    },
+    "6": {
+      "state": {
+        "on": true,
+        "bri": 254,
+        "hue": 10444,
+        "sat": 254,
+        "xy": [
+          0,
+          0
+        ],
+        "ct": 0,
+        "alert": "none",
+        "effect": "none",
+        "colormode": "hs",
+        "reachable": true
+      },
+      "type": "Extended color light",
+      "name": "Vehicle 6",
+      "modelid": "LCT001",
+      "swversion": "65003148",
+      "uniqueid": "00:17:88:01:00:d4:12:14",
+      "pointsymbol": {
+        "1": "none",
+        "2": "none",
+        "3": "none",
+        "4": "none",
+        "5": "none",
+        "6": "none",
+        "7": "none",
+        "8": "none"
+      }
+    },
+    "9": {
+      "state": {
+        "on": true,
+        "bri": 254,
+        "hue": 13444,
+        "sat": 254,
+        "xy": [
+          0,
+          0
+        ],
+        "ct": 0,
+        "alert": "none",
+        "effect": "none",
+        "colormode": "hs",
+        "reachable": true
+      },
+      "type": "Extended color light",
+      "name": "Vehicle 9",
+      "modelid": "LCT001",
+      "swversion": "65003148",
+      "uniqueid": "00:17:88:01:00:d4:12:17",
+      "pointsymbol": {
+        "1": "none",
+        "2": "none",
+        "3": "none",
+        "4": "none",
+        "5": "none",
+        "6": "none",
+        "7": "none",
+        "8": "none"
+      }
+    },
+    "10": {
+      "state": {
+        "on": true,
+        "bri": 254,
+        "hue": 14444,
+        "sat": 254,
+        "xy": [
+          0,
+          0
+        ],
+        "ct": 0,
+        "alert": "none",
+        "effect": "none",
+        "colormode": "hs",
+        "reachable": true
+      },
+      "type": "Extended color light",
+      "name": "Vehicle 10",
+      "modelid": "LCT001",
+      "swversion": "65003148",
+      "uniqueid": "00:17:88:01:00:d4:12:18",
+      "pointsymbol": {
+        "1": "none",
+        "2": "none",
+        "3": "none",
+        "4": "none",
+        "5": "none",
+        "6": "none",
+        "7": "none",
+        "8": "none"
+      }
+    }
+  },
+  "config": {
+    "name": "Philips hue",
+    "bridgeid": "000088FFFE00BBEE",
+    "ipaddress": "192.168.1.11:8300",
+    "linkbutton": false,
+    "dhcp": true,
+    "whitelist": {}
+  },
+  "groups": {},
+  "scenes": {},
+  "schedules": {}
+}

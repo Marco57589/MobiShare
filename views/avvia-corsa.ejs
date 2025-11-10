@@ -1,0 +1,65 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<!-- Fonts & CSS -->
+<link rel="stylesheet" href="/css/avvia-corsa.css">
+
+<main class="container mt-5 mb-5 flex-grow-1">
+    <h1 class="page-title text-center mb-4">Avvia una corsa</h1>
+
+    <!-- Credito -->
+    <div class="text-center mb-4">
+        <div class="credito-box shadow-sm rounded-4 p-4 mx-auto">
+            <h5>Credito Disponibile</h5>
+            <p class="credito-importo">€ <%= user.saldo || 0 %></p>
+        </div>
+        <% if (user.saldo <= 0) { %>
+            <p class="text-danger mt-2">Credito insufficiente per avviare una corsa.</p>
+        <% } %>
+    </div>
+
+    <% if (user.stato_profilo === 'sospeso') { %>
+        <div class="alert alert-warning text-center">
+            Il tuo profilo è <strong>sospeso</strong>. Non puoi iniziare una corsa.
+        </div>
+    <% } else { %>
+        <%- include('partials/error-box') %>
+
+        <form action="/avvia-corsa" method="POST">
+            <div class="mb-4">
+                <label for="parcheggio" class="form-label">Seleziona parcheggio</label>
+                <select name="parcheggio" id="parcheggio" class="form-select" required>
+                    <% parcheggi.forEach(p=> { %>
+                        <option value="<%= p.id %>"><%= p.nome %> - <%= p.via %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <!-- Mezzi disponibili -->
+            <div class="mezzi-section mt-4">
+                <h5 class="mb-3">Mezzi disponibili:</h5>
+                <div id="errore-corsa" class="text-danger text-center mb-3" style="display: none;">
+                    Seleziona un mezzo prima di avviare la corsa.
+                </div>
+                <div id="mezzi-container">
+                    <p id="no-mezzi" class="text-muted text-center" style="display: none;">Mezzi non disponibili</p>
+                    <% mezzi.forEach(m=> { %>
+                        <div class="mezzo-card shadow-sm rounded-4 p-3 mb-3" data-parcheggio="<%= m.id_parcheggio %>">
+                            <label>
+                                <input type="radio" name="mezzoId" value="<%= m.id %>" <%= user.saldo <=0 ? 'disabled' : '' %>>
+                                <strong><%= m.tipo %> #<%= m.id %></strong> – <%= m.stato %>
+                            </label>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-success px-4" <%= user.saldo <= 0 ? 'disabled' : '' %>>Avvia corsa</button>
+            </div>
+        </form>
+    <% } %>
+</main>
+
+<script src="js/avvia_corsa.js"></script>
+<%- include('partials/footer') %>

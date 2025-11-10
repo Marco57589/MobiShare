@@ -1,0 +1,124 @@
+:root {
+    --radius: 16px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --fg: #1e1e1e;
+    --muted: #6b7280;
+    --soft: #f8fafc;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color: var(--fg);
+    background: #fafafa;
+}
+
+.page-title {
+    font-family: 'Itim', cursive;
+    font-size: 2rem;
+    color: #198754;
+}
+
+.card {
+    border: 0;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    background: #fff;
+}
+
+.table {
+    margin: 0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table thead th {
+    font-weight: 600;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+.table tbody td {
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f7faf9;
+}
+
+.badge.stato-badge {
+    font-weight: 600;
+    padding: 0.4rem 0.6rem;
+    border-radius: 999px;
+}
+
+.battery-wrap {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.battery-progress {
+    height: 12px;
+    border-radius: 999px;
+    background-color: #eef2f7;
+    width: 160px;
+    overflow: hidden;
+}
+
+.battery-progress .progress-bar {
+    height: 100%;
+}
+
+.battery-label {
+    min-width: 48px;
+    text-align: right;
+    font-weight: 600;
+    color: #111827;
+}
+
+.alert {
+    border-radius: 12px;
+}
+
+.form-control, .form-select {
+    border-radius: 12px;
+}
+
+.btn {
+    border-radius: 12px;
+}
+
+@media (max-width: 576px) {
+    .battery-progress {
+        width: 120px;
+    }
+
+    .page-title {
+        font-size: 1.6rem;
+    }
+}
+
+.battery-edit-form {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.battery-edit-form .input-group {
+    width: auto;
+}
+
+.battery-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.battery-progress {
+    flex-grow: 1;
+    height: 20px;
+}
+
+.battery-label {
+    min-width: 40px;
+    text-align: right;
+}

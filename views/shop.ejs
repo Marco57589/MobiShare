@@ -1,0 +1,98 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<link rel="stylesheet" href="/css/shop.css">
+
+<div class="container d-flex flex-column justify-content-center align-items-center mt-2 pt-2">
+    <p class="credito-attuale">Punti Mobilita' Attuali</p>
+    <p class="fs-4 fw-bold valori"><%= user.puntiFedelta %></p>
+</div>
+
+<div class="container mt-4">
+    <div class="row">
+        <% shopItems.forEach(function(s) { %>
+            <div class="col-lg-4 col-md-12 mb-3">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title pacchetti">Pacchetto <%= s.nomePacchetto %></h5>
+                        <h5 class="card-title">Buono Credito <%= s.costo %>€</h5>
+                        <p class="card-text fs-4 fw-bold valori"><%= s.credito %> Punti</p>
+
+                        <button class="btn btn-success riscatta-btn" data-id="<%= s.id %>"
+                                data-nome="<%= s.nomePacchetto %>" data-credito="<%= s.credito %>">
+                            Riscatta
+                        </button>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">Conferma Riscatto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+            </div>
+            <div class="modal-body">
+                Vuoi riscattare <strong id="modalPacchetto"></strong> per <strong id="modalPunti"></strong> punti?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="confermaBtn">Conferma</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const riscattaBtns = document.querySelectorAll('.riscatta-btn');
+		const modalPacchetto = document.getElementById('modalPacchetto');
+		const modalPunti = document.getElementById('modalPunti');
+		const confermaBtn = document.getElementById('confermaBtn');
+		let selectedPacchettoId = null;
+
+		riscattaBtns.forEach(btn => {
+			btn.addEventListener('click', () => {
+				selectedPacchettoId = btn.dataset.id;
+				modalPacchetto.textContent = btn.dataset.nome;
+				modalPunti.textContent = btn.dataset.credito;
+				confermaBtn.dataset.pacchettoId = selectedPacchettoId;
+
+				const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+				modal.show();
+			});
+		});
+
+		confermaBtn.addEventListener('click', async () => {
+			const pacchettoId = confermaBtn.dataset.pacchettoId;
+			try {
+				const res = await fetch('/shop/redeem', {
+					method: 'POST',
+					headers: {'Content-Type': 'application/json'},
+					body: JSON.stringify({pacchettoId})
+				});
+				const data = await res.json();
+
+				if (data.success) {
+					const saldoElem = document.querySelector('.credito-attuale + .valori');
+					if (saldoElem) saldoElem.textContent = data.newPoints;
+
+					const modalEl = document.getElementById('confirmModal');
+					const modal = bootstrap.Modal.getInstance(modalEl);
+					modal.hide();
+				} else {
+					alert(data.error || 'Errore nel riscatto');
+				}
+			} catch (err) {
+				console.error(err);
+				alert('Errore di connessione');
+			}
+		});
+	});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<%- include('partials/footer') %>

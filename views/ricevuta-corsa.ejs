@@ -1,0 +1,208 @@
+<%- include('partials/header') %>
+<%- include('partials/navbar') %>
+
+<link rel="stylesheet" href="/css/ricevuta-corsa.css">
+
+<main class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <% if (user.stato_profilo === 'sospeso') { %>
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark text-center py-4">
+                        <i class="fas fa-exclamation-triangle icon-warning mb-3"></i>
+                        <h1 class="h3 mb-2">Account Sospeso</h1>
+                        <p class="mb-0">Attenzione: il tuo account è stato temporaneamente sospeso</p>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-lock fa-3x text-warning mb-3"></i>
+                            <p class="text-muted">
+                                Il tuo account è stato sospeso a causa di un saldo negativo dopo l'ultima corsa.
+                            </p>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <div class="d-flex">
+                                <i class="fas fa-info-circle me-3 mt-1"></i>
+                                <div>
+                                    <strong>Informazioni sulla sospensione:</strong>
+                                    <ul class="mb-0 mt-1">
+                                        <li>Saldo attuale: <strong class="text-danger">€ <%= user.saldo.toFixed(2) %></strong></li>
+                                        <li>Per sbloccare l'account, effettua una ricarica che copra il debito</li>
+                                        <li>Attendi che l'assistenza riattivi il tuo account</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-box">
+                            <h3 class="h5 mb-3 text-primary"><i class="fas fa-route me-2"></i>Ultima Corsa</h3>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Mezzo:</strong> <%= ride.mezzoTipo %> #<%= ride.mezzoId %></p>
+                                    <p><strong>Durata:</strong> <%= ride.durataMinuti %> minuti</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Costo:</strong> € <%= ride.costo.toFixed(2) %></p>
+                                    <p><strong>Data:</strong> <%= ride.endTime %></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6 offset-md-3 mb-2">
+                                <a href="/gestione-credito" class="btn btn-warning w-100 py-2">
+                                    <i class="fas fa-coins me-2"></i>Ricarica Credito
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-4">
+                            <div class="d-flex">
+                                <i class="fas fa-headset me-3 mt-1"></i>
+                                <div>
+                                    <strong>Hai bisogno di aiuto?</strong>
+                                    <p class="mb-0 mt-1">
+                                        Contatta il nostro servizio clienti per assistenza sulla sospensione.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <% } else { %>
+                <div class="card confirmation-card">
+                    <div class="card-header confirmation-header text-center py-4">
+                        <i class="fas fa-check-circle icon-success mb-3"></i>
+                        <h1 class="h3 mb-2">Corsa Completata con Successo!</h1>
+                        <p class="mb-0">Grazie per aver scelto MobiShare</p>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <div class="detail-box">
+                            <h3 class="h5 mb-3 text-primary"><i class="fas fa-route me-2"></i>Dettagli Corsa</h3>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Mezzo utilizzato:</strong><br><%= ride.mezzoTipo %> #<%= ride.mezzoId %></p>
+                                    <p><strong>Partenza:</strong><br><%= ride.parcheggioPartenzaNome %></p>
+                                    <p><strong>Ora inizio:</strong><br><%= ride.startTime %></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Durata:</strong><br><%= ride.durataMinuti %> minuti</p>
+                                    <p><strong>Arrivo:</strong><br><%= ride.parcheggioArrivoNome %></p>
+                                    <p><strong>Ora fine:</strong><br><%= ride.endTime %></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-box">
+                            <h3 class="h5 mb-3 text-primary"><i class="fas fa-receipt me-2"></i>Dettagli Pagamento</h3>
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <p class="mb-1"><strong>Costo corsa:</strong> € <%= ride.costo.toFixed(2) %></p>
+                                    <p class="mb-1"><strong>Credito precedente:</strong> € <%= (user.saldo + ride.costo).toFixed(2) %></p>
+                                    <p class="mb-1"><strong>Credito attuale:</strong> € <%= user.saldo.toFixed(2) %></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <% if (ride.puntiGuadagnati > 0) { %>
+                            <div class="detail-box ">
+                                <h3 class="h5 mb-3 text-success"><i class="fas fa-star me-2"></i>Punti Mobilità</h3>
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <p class="mb-1"><strong>Punti guadagnati:</strong> +<%= ride.puntiGuadagnati.toFixed(2) %></p>
+                                        <p class="mb-1"><strong>Punti totali:</strong> <%= user.puntiFedelta.toFixed(2) %></p>
+                                        <p class="mb-0 text-muted small">I punti possono essere convertiti in credito nello Shop!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <div class="detail-box" style="background: #f8f9fa;">
+                                <h3 class="h5 mb-3 text-alert"><i class="fas fa-bolt me-2"></i>Mezzo Assistito</h3>
+                                <p class="mb-0 text-muted">
+                                    Hai utilizzato un mezzo a propulsione elettrica. I mezzi assistiti non accumulano punti fedeltà,
+                                    ma offrono un'esperienza di guida più confortevole!
+                                </p>
+                            </div>
+                        <% } %>
+
+                        <% if (ride.feedback || ride.danni) { %>
+                            <div class="detail-box">
+                                <h3 class="h5 mb-3 text-primary"><i class="fas fa-comment-dots me-2"></i>Il Tuo Feedback</h3>
+                                <% if (ride.feedback) { %>
+                                    <div class="mb-3">
+                                        <strong>Commenti:</strong>
+                                        <p class="mt-1 p-2 bg-light rounded"><%= ride.feedback %></p>
+                                    </div>
+                                <% } %>
+
+                                <% if (ride.danni && ride.danni.length > 0) { %>
+                                    <div>
+                                        <strong>Danni segnalati:</strong>
+                                        <div class="mt-1">
+                                            <% ride.danni.forEach(function(danno) { %>
+                                                <span class="badge bg-danger me-1 mb-1"><%= danno %></span>
+                                            <% }) %>
+                                        </div>
+                                        <p class="mt-2 mb-0 text-muted small">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            I nostri tecnici controlleranno il mezzo al più presto.
+                                        </p>
+                                    </div>
+                                <% } %>
+                            </div>
+                        <% } %>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6 mb-2">
+                                <a href="/avvia-corsa" class="btn btn-success w-100 py-2">
+                                    <i class="fas fa-bicycle me-2"></i>Nuova Corsa
+                                </a>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <a href="/" class="btn btn-outline-primary w-100 py-2">
+                                    <i class="fas fa-home me-2"></i>Torna alla Home
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-4">
+                            <div class="d-flex">
+                                <i class="fas fa-info-circle me-3 mt-1"></i>
+                                <div>
+                                    <strong>Informazioni importanti:</strong>
+                                    <ul class="mb-0 mt-1">
+                                        <li>La ricevuta è stata inviata al tuo indirizzo email</li>
+                                        <li>Puoi visualizzare lo storico corse nel tuo profilo</li>
+                                        <li>Per assistenza, contatta il nostro supporto</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</main>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const confirmationCard = document.querySelector('.confirmation-card, .card');
+		if (confirmationCard) {
+			confirmationCard.style.transform = 'translateY(20px)';
+			confirmationCard.style.opacity = '0';
+
+			setTimeout(() => {
+				confirmationCard.style.transition = 'all 0.5s ease';
+				confirmationCard.style.transform = 'translateY(0)';
+				confirmationCard.style.opacity = '1';
+			}, 100);
+		}
+	});
+</script>
+
+<%- include('partials/footer') %>
